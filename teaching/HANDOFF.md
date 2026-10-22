@@ -9,3 +9,4 @@
 | 章 | 完成日 | 實際耗時 | 和書上做法的差異 |
 | --- | --- | --- | --- |
 | 01 | 2026-10-22 | 4 分 | 書上無指令，改產出 DIAGNOSIS.md（四原型＋20 項診斷表）與 10 條規則的 CLAUDE.md；claude -p 驗證時被全域 Stop hook 帶去自動 commit，之後改加 --setting-sources project,local |
+| 02 | 2026-10-22 | 9 分 | 書上用既有專案，改自建 3 種付款的最小 TS 模組（16 測試）並用 claude -p 重構成 strategy pattern；TS 7 與 ts-jest 不相容改釘 TS 5；數字標假設值 |
