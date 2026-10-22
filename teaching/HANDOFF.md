@@ -17,3 +17,4 @@
 | 07 | 2026-10-22 | 3 分 | 用假事件 JSONL＋metrics.py 計算兩個比率（4 pytest 過）；開發者對代理比率分母改用開發者-日；遙測 hook 只寫範本不啟用 |
 | 08 | 2026-10-22 | 6 分 | 自建故意 vibe 的 Flask 原型；六大面向稽核後只修 critical（12 pytest 過），N+1／migration 留在晉升檢查表 |
 | 09 | 2026-10-22 | 4 分 | deny 規則用 claude -p 實測 9 項（含 bypass 模式仍被擋、對照組不載 local 會讀到）；託管設定只寫範本；git reset --hard 未實測 |
+| 10 | 2026-10-22 | 5 分 | 改產出 SCALING 決策表、prompt-library（4 提示詞）、三種 CLAUDE.md 範本、分享會議程；用 claude -p 實跑一個測試生成提示詞，其餘範本未實跑 |
