@@ -27,3 +27,4 @@
 | 17 | 2026-10-22 | 4 分 | work/ 下三個獨立 repo＋.claude 控制區；work/ 放在練習 repo 內但 gitignore（書上父目錄不是 repo），控制區另存快照；claude -p 從控制區答對發票位置與部署順序；--add-dir 未實測 |
 | 18 | 2026-10-22 | 8 分 | Cascade 四步三 repo 各自 commit，新舊前後端互相相容；claude -p 寫 .claude/ 會被擋，改由子 session 輸出全文、外層存檔 |
 | 19 | 2026-10-22 | 3 分 | 全部只寫文件與範本（四路徑比較、金鑰輪替 SOP、CISO 檢查表、權限範本），check_templates.py 驗證通過；金鑰範本改名 env.example；頻率與金額標假設值 |
+| 20 | 2026-10-22 | 5 分 | workflow 只寫範本不接 GitHub；本機 3 個唯讀 claude -p 平行審查含問題 diff，25 項去重成 13 項（3 critical 全抓到）；項數每次有落差不宜當 CI 門檻 |
