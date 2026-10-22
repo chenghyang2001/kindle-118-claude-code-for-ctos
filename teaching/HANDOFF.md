@@ -8,3 +8,4 @@
 
 | 章 | 完成日 | 實際耗時 | 和書上做法的差異 |
 | --- | --- | --- | --- |
+| 01 | 2026-10-22 | 4 分 | 書上無指令，改產出 DIAGNOSIS.md（四原型＋20 項診斷表）與 10 條規則的 CLAUDE.md；claude -p 驗證時被全域 Stop hook 帶去自動 commit，之後改加 --setting-sources project,local |
