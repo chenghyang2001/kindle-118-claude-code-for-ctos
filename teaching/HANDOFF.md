@@ -29,3 +29,4 @@
 | 19 | 2026-10-22 | 3 分 | 全部只寫文件與範本（四路徑比較、金鑰輪替 SOP、CISO 檢查表、權限範本），check_templates.py 驗證通過；金鑰範本改名 env.example；頻率與金額標假設值 |
 | 20 | 2026-10-22 | 5 分 | workflow 只寫範本不接 GitHub；本機 3 個唯讀 claude -p 平行審查含問題 diff，25 項去重成 13 項（3 critical 全抓到）；項數每次有落差不宜當 CI 門檻 |
 | 21 | 2026-10-22 | 3 分 | 全為文件：檢查表＋HITL 矩陣套用到虛構退款代理，找出 7 缺口（6 紅）並把規格改成 v2；金額與信心門檻標假設值 |
+| 22 | 2026-10-22 | 5 分 | 186 行 Python MCP server 以 --scope project 掛上，claude -p 實呼叫並驗證冪等與 audit log（12 pytest 過）；附錄範本整理進 templates/，RETRO.md 回顧全書 |
