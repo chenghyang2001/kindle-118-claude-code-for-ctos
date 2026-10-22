@@ -11,3 +11,4 @@
 | 01 | 2026-10-22 | 4 分 | 書上無指令，改產出 DIAGNOSIS.md（四原型＋20 項診斷表）與 10 條規則的 CLAUDE.md；claude -p 驗證時被全域 Stop hook 帶去自動 commit，之後改加 --setting-sources project,local |
 | 02 | 2026-10-22 | 9 分 | 書上用既有專案，改自建 3 種付款的最小 TS 模組（16 測試）並用 claude -p 重構成 strategy pattern；TS 7 與 ts-jest 不相容改釘 TS 5；數字標假設值 |
 | 03 | 2026-10-22 | 3 分 | 書上偏策略，改產出 TOOL-MATRIX.md（4 工具×7 軸評分）與 HANDOFF-POLICY.md（8 關卡 24 項）；交接門檻數字書上沒有，標假設值 |
+| 04 | 2026-10-22 | 3 分 | 改用 openpyxl 產生含公式的試算表＋程式自動產出一頁摘要；書上給範圍，保守取最差端、樂觀取最好端；薪資與訂閱費標假設值（基準 ROI 1343%） |
