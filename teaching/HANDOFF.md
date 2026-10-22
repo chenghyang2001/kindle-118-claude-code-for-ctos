@@ -19,3 +19,4 @@
 | 09 | 2026-10-22 | 4 分 | deny 規則用 claude -p 實測 9 項（含 bypass 模式仍被擋、對照組不載 local 會讀到）；託管設定只寫範本；git reset --hard 未實測 |
 | 10 | 2026-10-22 | 5 分 | 改產出 SCALING 決策表、prompt-library（4 提示詞）、三種 CLAUDE.md 範本、分享會議程；用 claude -p 實跑一個測試生成提示詞，其餘範本未實跑 |
 | 11 | 2026-10-22 | 4 分 | 隔離模式（只載專案層設定），開窗先選允許外部 CLAUDE.md 匯入；四週 Harness 三項 claude -p 實測全過；已知漏洞：用 Bash 寫 .sql 不會被 hook 擋 |
+| 12 | 2026-10-22 | 6 分 | 用 claude -p 代替互動式 /init（56 行）再整理成三層（根 60 行＋src/api＋User 層只寫範本）；health 端點 10 條慣例全遵守；--allowedTools 會吃掉 prompt 參數改用 stdin |
