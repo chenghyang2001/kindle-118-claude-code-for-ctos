@@ -1,0 +1,184 @@
+Different notebook specified, starting new conversation...
+Continuing conversation 47e52d34...
+Answer:
+### 第 7 章：衡量成效
+
+* **讀者實際動手操作**：
+  * **(a) 具體操作步驟與指令**：
+    * **操作步驟與指標計算**：建立與監控兩大關鍵行為衍生指標——**次代理對 Session
+比率（Subagent-to-session ratio）**（健康值需 >2.0，若 <0.5 代表將 AI 
+當成高價自動補全工具）[1] 以及 **開發者對代理比率（Dev-to-agents 
+ratio）**（計算每位開發者每工作小時平均併發執行的獨立 Session 數，目標 >2.5 
+代表團隊已習慣平行化開發）[2]。
+    * **斜線指令與設定檔**：在 `.claude/settings.json` 中配置 **Hooks 
+遙測**，並利用 `allowedHttpHookUrls` 白名單將 Session 事件直接傳送給內部數據收集
+API [2, 3]。
+    * **要建的檔案**：內部數據指標 Dashboard 或事件接收微服務 API 腳本 [3]。
+    * **檢查表**：套用「指標生命週期檢查表（Metrics Lifecycle 
+Checklist）」，明確記錄每項指標回答的具體問題，並為採納期指標設定廢除日期（例如
+當次代理比率連續 30 天穩定高於 1.5 即廢除）[4, 5]。
+  * **(b) 書中提到的範例專案或 GitHub 網址**：OpenTelemetry (OTel) 遙測框架與 
+OTLP 相容後端 [3]。
+  * **(c) 需要的外部環境、API key 或帳號**：Claude Code Enterprise 或 Teams 
+方案（解鎖 Console 分析儀表板 Dashboard 與 OTel / Hooks 事件匯出權限）[2, 6]。
+
+---
+
+### 第 8 章：氛圍編碼應用的問題
+
+* **讀者實際動手操作**：
+  * **(a) 具體操作步驟與指令**：
+    * **審查步驟**：對非技術人員用自然語言快速建立的 Vibecoded 原型進行 
+**「生產就緒度品質稽核（Quality 
+Audit）」**，審查六大核心領域：架構一致性、資安與硬編碼金鑰、測試覆蓋率、套件相
+依性衛生、效能基線與資料模型 [7, 8]。
+    * **範例提示詞 (Prompt)**：
+      ```text
+      "Audit this codebase for production readiness. Check these six areas and 
+give me a severity rating (critical/high/medium/low) for each: (1) architecture 
+coherence — is there a clear separation of concerns? (2) security — any 
+hardcoded secrets, missing auth checks, or input validation gaps? (3) test 
+coverage — what percentage of critical paths have tests? (4) dependency hygiene 
+— unnecessary or vulnerable packages? (5) performance — N+1 queries, missing 
+pagination, bundle size issues? (6) data model — missing indexes, no migrations,
+no foreign keys? Output a markdown table with findings and recommendations."
+      ``` [9]
+    * 
+**要建的檔案**：`AUDIT.md`（品質稽核報告與評級表）、`PROMOTION_CHECKLIST.md`（原
+型晉升至生產環境檢查表，包含 50% 核心路徑測試覆蓋率與 Sentry 錯誤監控配置）[9, 
+10]。
+  * **(b) 書中提到的範例專案或 GitHub 網址**：Supabase（常見缺乏 Migration 
+的無歷程資料庫控制台案例）、Sentry（錯誤監控）[7, 10]。
+  * **(c) 需要的外部環境、API key 或帳號**：Claude Code CLI、原型專案 Git 
+儲存庫存取權限。
+
+---
+
+### 第 9 章：資安合規與治理
+
+* **讀者實際動手操作**：
+  * **(a) 具體操作步驟與指令**：
+    * **操作步驟與權限控制**：配置權限原則（Permission 
+Policies）與受控設定（Managed Settings）。使用 `--permission-mode` 
+控制嚴格度，並透過中央託管配置阻止破壞性指令 [11, 12]。
+    * **要建的檔案與配置**：
+      1. 在 `.claude/settings.json` 或 IT 託管配置中加入絕對阻擋規則 [12]。
+      2. 產出 **「CISO 一頁式資安摘要文件（One-Page CISO 
+Summary）」**，揭露資料流向（僅程式碼脈絡傳輸至 API）、資料留存（預設 30 
+天，Enterprise 享零留存 ZDR）與 SOC 2 Type II / HIPAA 合規狀態 [13, 14]。
+    * **CLAUDE.md 資安提示詞**：
+      ```text
+      "Never read or modify files in /secrets, /credentials, or any .env file."
+      ``` [12]
+    * **檢查表**：套用「資安合規與支出控制檢查表（Security & Spend Controls 
+Checklist）」，包含設定每人每日支出上限與 Alert 警示閥值 [15, 16]。
+  * **(b) 書中提到的範例專案或 GitHub 網址**：SOC 2 Type II、HIPAA/BAA、Zero 
+Data Retention (ZDR) 條款證明文件 [14, 17]。
+  * **(c) 需要的外部環境、API key 或帳號**：Anthropic Enterprise 
+Console（用於設定 API 工作區與金鑰輪替）、企業 MDM / 
+組態管理系統（用於派發託管設定）[12, 16]。
+
+---
+
+### 第 10 章：擴大採用
+
+* **讀者實際動手操作**：
+  * **(a) 具體操作步驟與指令**：
+    * **組織架構選擇步驟**：依工程團隊規模實施對應模型：小於 30 人採用 **Guild 
+模型**（跨團隊實踐社群）；30-100 人採用 **Hub-and-Spoke 模型**（2-4 人中央 AI 
+平台團隊訂定標準）；超過 100 人採用 **Embedded Champions 模型**（每隊派駐 
+Champion 分配 20% 時間）[18, 19]。
+    * **要建的檔案**：
+      1. **共享 Prompt 庫儲存庫（Internal Prompt Library 
+Repo）**：專屬專案庫，收錄通過 Lint 審查的 SQL 遷移與測試生成提示詞 [20]。
+      2. **專案類型 CLAUDE.md 範本**（位於 `.claude/templates/`）：如 React 
+前端、Node.js API 與 Python 資料管道範本 [21, 22]。
+      3. **`FAQ.md` 與 
+`ANTI_PATTERNS.md`**：記錄常見困惑解答與禁止事項（例如禁止讓 AI 從頭設計 DB 
+Schema）[21, 22]。
+    * **團隊運作與分享**：每週舉辦 30 分鐘「Insight-sharing 
+meeting」，每位講者分享：1 個成功的 Prompt、1 個失敗案例、1 個 CLAUDE.md 
+改進建議 [23, 24]。
+  * **(b) 書中提到的範例專案或 GitHub 網址**：團隊專屬 Slack/Teams 頻道（如 
+`#claude-code` 或 `#ai-dev`）、內部 GitHub/GitLab 共享儲存庫 [20, 25]。
+  * **(c) 需要的外部環境、API key 或帳號**：GitHub/GitLab 企業組織帳號、Slack 或
+Microsoft Teams 通訊平台 [20, 25]。
+
+---
+
+### 第 11 章：Harness 框架
+
+* **讀者實際動手操作**：
+  * **(a) 具體操作步驟與指令**：
+    * **實作步驟（四週導入計畫）**：
+      * *Week 1 Memory*：建立專案級 `CLAUDE.md` [26]。
+      * *Week 2 Permissions*：設定絕對禁止指令（deny rules）與允許清單 [26]。
+      * *Week 3 Hooks*：建立 `PreToolUse` 與 `PostToolUse` 確定性執行腳本 [26]。
+      * *Week 4 Isolation*：配置 Subagent 工具權限與 Git Worktree 隔離 [26]。
+    * **要建的檔案**：`.claude/settings.json`（設定 Harness 權限與 
+Hooks）、命令校驗腳本 `/usr/local/bin/validate-command.sh` [27, 28]。
+    * **範例 JSON 配置 (Permissions & Hooks)**：
+      ```json
+      {
+        "permissions": {
+          "deny": ["Bash(rm -rf *)", "Bash(curl * | bash)", "Edit(.env*)"],
+          "allow": ["Bash(npm run *)", "Bash(git *)"],
+          "ask": ["Bash(docker *)"]
+        },
+        "hooks": {
+          "PreToolUse": [{
+            "matcher": "Bash",
+            "hooks": [{"type": "command", "command": 
+"/usr/local/bin/validate-command.sh"}]
+          }],
+          "PostToolUse": [{
+            "matcher": "",
+            "hooks": [{"type": "http", "url": 
+"https://audit.internal/claude-events", "timeout": 5}]
+          }]
+        }
+      }
+      ``` [27, 28]
+    * **檢查表**：套用「Harness 防禦架構檢查表（Harness Layers 
+Checklist）」，確保結構化規則（Permissions/Hooks）優於機率性提示詞（CLAUDE.md）[
+29, 30]。
+  * **(b) 書中提到的範例專案或 GitHub 網址**：無。
+  * **(c) 需要的外部環境、API key 或帳號**：Claude Code CLI、Git 及 Git Worktree
+工具、內部 Audit Log 接收端點 [28, 31]。
+
+---
+
+### 第 12 章：CLAUDE.md
+
+* **讀者實際動手操作**：
+  * **(a) 具體操作步驟與指令**：
+    * **斜線指令**：在專案根目錄執行 `claude /init`，讓 AI 
+自動分析目錄結構與設定檔，生成初始 `CLAUDE.md` [32]。
+    * **三層 Context 建立步驟**：建立 User 級（`~/.claude/CLAUDE.md`）、Project 
+級（根目錄 `CLAUDE.md`）與 Directory 級（如 
+`/src/api/CLAUDE.md`）的階層記憶結構，單一檔案控制在 50-80 行內 [33-36]。
+    * **要建的檔案**：根目錄 `CLAUDE.md`（包含 Project overview, Tech stack, 
+Architecture, Conventions, What NOT to do, Commands 六區塊）與 `REVIEW.md`（PR 
+程式碼審查標準文件）[35, 37]。
+    * **範例提示詞 (Prompt comparison)**：
+      * *未設定 CLAUDE.md 時*：需撰寫冗長規格說明框架與庫。
+      * *設定 CLAUDE.md 後*：
+        ```text
+        "Create a new API endpoint for user preferences. Follow existing 
+patterns in /src/routes/."
+        ``` [38]
+    * **檢查表**：CLAUDE.md 治理與修剪檢查表（維護者每月審查、Prune 
+過時規則、拆分超過 80 行的檔案）[35, 36]。
+  * **(b) 書中提到的範例專案或 GitHub 網址**：無。
+  * **(c) 需要的外部環境、API key 或帳號**：Claude Code CLI、Git 版本控制系統 
+[35, 39]。
+
+---
+
+💡 **下一步建議**：如果需要，我們可以繼續整理 **第 13-18 
+章（既有程式碼庫重構、多儲存庫 Multi-Repo 與平行化開發）** 
+的動手操作與指令細節，或是為您將第 11-12 章的 `CLAUDE.md` 與 
+`.claude/settings.json` 製作成可直接複製至專案使用的完整 Markdown/JSON 
+設定範本！
+
+Resumed conversation: 47e52d34-40fd-4e99-8ddd-8a09b58ef67f

@@ -1,0 +1,214 @@
+Different notebook specified, starting new conversation...
+Continuing conversation 47e52d34...
+Answer:
+### 第 18 章：多儲存庫開發
+
+* **讀者實際動手操作**：
+  * **(a) 具體操作步驟與指令**：
+    * **Cascade（級聯變更）協調步驟**：遵循「合約（Contract） ➔ 後端（Backend） 
+➔ 消費端（Consumers 平行擴散）」的標準變更順序 [1]：
+      1. *Step 1 變更 API 合約*：修改 `shared-contracts` 中的 OpenAPI 
+規格或型態定義並發起 PR，完成 API 審查小組審核 [1]。
+      2. *Step 2 後端實作*：後端實作需維持「向下相容（Backward 
+Compatibility）」，優先採用新增欄位等無破壞性變更 [1, 2]。
+      3. *Step 3 擴散至消費端*：待合約與後端穩定後，啟動平行 Worker Agents 
+更新前端、行動端及平板端等消費介面 [1]。
+    * **斜線指令與 CLI 指令**：
+      * 使用 `--task` 啟動特定領域的 Specialist Agent [1]：
+        ```bash
+        cd ~/work/sesame/shared-contracts
+        claude --task "Read ../.claude/modules/recruiting.md and the PRD at 
+../.claude/prds/video-interviews.md. Update the OpenAPI spec to include 
+VideoInterview, VideoInterviewSchedule, and VideoInterviewRecording."
+        ```
+      * 背景非互動式平行執行多端變更 [1, 2]：
+        ```bash
+        cd ~/work/sesame/backend
+        claude --task "Read ../.claude/handoffs/video-interviews-backend.md. 
+Implement the backend changes following the patterns in src/recruiting/." &
+
+        cd ~/work/sesame/frontend
+        claude --task "Read ../.claude/handoffs/video-interviews-frontend.md. 
+Build the frontend components following patterns in src/modules/recruiting/." &
+        ```
+    * **要建的檔案**：
+      * **交接文件（Handoff Document）**（位於 
+`../.claude/handoffs/`）：包含變更前後的 API JSON 
+樣貌、型態更新與各消費端需要修改的具體檔案清單 [3, 4]。
+      * **領域專用 CLAUDE.md**（位於 `.claude/modules/<domain>.md`）[2]。
+    * **範例提示詞 (Prompts)**：
+      1. *Coordinator Agent 生成 Handoff Document Prompt* [4]：
+         ```text
+         "Generate a cross-repo change specification for the new billingPeriod 
+field. Include: (1) the exact API response shape change with before/after JSON, 
+(2) the TypeScript type update needed in shared-contracts, (3) for each 
+consuming repo — frontend, mobile, tablet-pos, tablet-kitchen — list the 
+specific files and functions that parse this endpoint's response. Format as a 
+markdown document I can paste into separate repo sessions."
+         ```
+      2. *Spanning Session 探索跨 Repo 影響範圍 Prompt* [3]：
+         ```text
+         "Read the ecosystem CLAUDE.md at ../.claude/CLAUDE.md and this repo's 
+CLAUDE.md. I need to add a billingPeriod field to the invoice endpoint. Identify
+every repo that consumes this endpoint and list the specific files in each repo 
+that parse the invoice response."
+         ```
+    * **檢查表**：多儲存庫部署順序檢查表（編碼於生態系 
+`CLAUDE.md`，強制規定後端必須先於消費端部署以防線上事故）[2]。
+  * **(b) 書中提到的範例專案或 GitHub 網址**：`shared-contracts` API 
+介面合約儲存庫 [1, 5]、Sesame 餐廳科技生態系（含 Django Backend、React 
+Dashboard、React Native Mobile App、Kotlin Tablet Apps）[6, 7]。
+  * **(c) 需要的外部環境、API key 或帳號**：Claude Code CLI [1, 
+6]、GitHub/GitLab 企業組織權限 [8, 9]、真實 Staging 測試環境（進行真實 API 
+跨端整合測試而非僅用 Mock）[2]。
+
+---
+
+### 第 19 章：部署 Claude Code
+
+* **讀者實際動手操作**：
+  * **(a) 具體操作步驟與指令**：
+    * **部署模式選擇與配置步驟**：
+      1. 評估四大部署路徑：`CLI + Pro/Max`（個人 OAuth 訂閱）、`CLI + API 
+Key`（Console 按 Token 計費）、`Claude Agent SDK`（客製化 
+Agent/內部工具）、`Managed Agents`（Anthropic 託管）[10]。
+      2. 在 Anthropic Console 建立組織與專案工作區（API 
+Workspaces），為各團隊設定硬性支出上限（Hard Spend Cap）[11]。
+      3. **消除資安死角**：禁止在 CI Runner、共享機器或 Bastion Host 上放置個人 
+Pro/Max 憑證；CI 自動化必須採用 Console API Key 或短效 SDK 憑證 [11, 12]。
+    * **環境變數設定**：
+      ```bash
+      export ANTHROPIC_API_KEY="sk-ant-api03-..."
+      ```
+    * **要建的檔案**：API 金鑰定期輪替 SOP Runbook 
+[11]、`.claude/settings.json`（託管工具權限檔）[13]。
+    * **檢查表**：CISO 
+資安審查與支出控制檢查表（含每週工作區支出儀表板、日誌匯出至 SIEM、ZDR 
+零資料留存協議簽署等）[11]。
+  * **(b) 書中提到的範例專案或 GitHub 
+網址**：`https://claude.com/pricing`（方案與定價查詢）[10]。
+  * **(c) 需要的外部環境、API key 或帳號**：Anthropic Console 管理員帳號與 API 
+Keys [10, 11]、AWS Bedrock / Google Cloud Vertex AI 
+帳號（若企業有資料駐留與地域合規需求）[11, 13]。
+
+---
+
+### 第 20 章：自動化與內部工具
+
+* **讀者實際動手操作**：
+  * **(a) 具體操作步驟與指令**：
+    * **CI/CD 自動化與內部工具開發步驟**：
+      1. *Headless 模式整合*：在 GitHub Actions / GitLab CI 中以無互動模式調用 
+Claude Code，將 PR 審查與合規檢查自動化 [14, 15]。
+      2. *Multi-Agent Code Review*：在 PR 建立時發動三平行 Agent 審查（Agent 1 
+正確性、Agent 2 資安、Agent 3 規範）[15]。
+      3. *建構 MCP Server 與內部工具*：撰寫輕量級 MCP Server (100-300 行) 或 
+Slack Bot，連線資料庫、監控系統（Datadog/Sentry）或 JIRA [16-18]。
+    * **CLI 指令與執行參數**：
+      * `claude -p "your prompt"`（非互動式執行，傳回文字）[14]
+      * `claude -p "your prompt" --output-format json`（傳回結構化 JSON）[14]
+      * 
+`--dangerously-skip-permissions`（完全自主執行，無權限提示，僅限拋棄式/沙盒 CI 
+Runner，嚴禁於開發者本機使用）[19, 20]
+      * 可重複調用之 Skill 指令：`/deploy-checklist`, `/incident-start`, 
+`/onboard-new-dev`, `/contract`, `/qa` [21]
+    * **要建的檔案**：
+      * `.github/workflows/weekly-audit.yml`（GitHub Actions 
+排程稽核工作流）[20]
+      * `REVIEW.md`（PR 審查標準文件）[15]
+      * `.claude/skills/` 目錄下的自訂團隊技能腳本 [21]
+    * **範例提示詞 (Prompts)**：
+      1. *GitHub Actions 預防性資安稽核 Prompt* [20]：
+         ```bash
+         claude -p "Perform a comprehensive security audit of this codebase. 
+Check for: outdated dependencies with known CVEs, hardcoded credentials, 
+insecure API patterns, and authentication weaknesses. Produce a report in 
+markdown format with severity ratings and remediation suggestions." \
+           --dangerously-skip-permissions \
+           --output-format text > audit-report.md
+         ```
+      2. *建構內部 Slack 機器人 Prompt* [16]：
+         ```text
+         "Build a Slack bot that monitors our GitHub Actions workflows. When a 
+build fails on the main branch, it should: (1) post the failure details to 
+#engineering-alerts, (2) identify the last committer and mention them, (3) link 
+to the failing workflow run. Use Node.js and the Slack Bolt framework. Include a
+Dockerfile for deployment."
+         ```
+    * **檢查表**：內部工具優先級盤點表與 Human-in-the-Loop 安全原則檢核表 [22]。
+  * **(b) 書中提到的範例專案或 GitHub 網址**：Slack Bolt Framework [16]、Sentry 
+/ Datadog / PagerDuty / JIRA / Linear [18, 23]。
+  * **(c) 需要的外部環境、API key 或帳號**：GitHub Actions / GitLab CI Runner 
+權限 [15]、Slack Bot App Credentials [16]、Sentry / Datadog / JIRA API Key [18, 
+23]。
+
+---
+
+### 第 21 章：代理式產品設計
+
+* **讀者實際動手操作**：『無』
+* **重點與產出文件**：本章指引 CTO 
+如何審視與把關代理式（Agentic）產品需求，強調產品設計心態需從傳統確定性 UI 
+轉向「受監督的委派（Delegation with oversight）」[24, 
+25]。建立代理式產品的信任基礎在於三大設計支柱：透明度與可解釋性（Rationale）、可
+追溯性（Source Attribution）以及適時的人機協同中斷點與復原機制（HITL Interrupt 
+points & Undo）[25, 26]。本章可產出的文件為「代理式產品需求審查檢查表（Agentic 
+Product Spec Checklist）」與「人機協同防禦機制矩陣（HITL Guardrails Matrix）」。
+
+---
+
+### 第 22 章：MCP優先的未來
+
+* **讀者實際動手操作**：
+  * **(a) 具體操作步驟與指令**：
+    * **MCP Server 實驗與搭建步驟**：
+      1. *選擇第一個內部工具*：選定高價值系統（如部署管道、監視器、Ticketing 或 
+Staging 資料庫）[27]。
+      2. *設計 MCP 協定 (Protocol-first)*：定義 Agent 可調用的 Tools、Resources 
+與 Prompts，堅持 Schema-driven 介面與冪等性（Idempotent）操作 [28, 29]。
+      3. *建構與測試*：撰寫 100-300 行輕量級 MCP Server，配置完整的 Audit Trail 
+日誌與速率限制（Rate Limits），在本地連接 Claude Code 進行跨系統端到端測試 [27, 
+29]。
+    * **要建的檔案**：
+      * `.claude/mcp.json` 或 `mcp-config.json`（MCP 伺服器連接設定檔）
+      * MCP Server 原始碼（定義 Schema 與安全防護）[29]
+    * **檢查表**：MCP 服務器準備度與安全性檢查表（包含強型別 
+Schema、可觀測性日誌、冪等性設計、速率限制與破壞性操作的人力批准流）[27, 29]。
+  * **(b) 書中提到的範例專案或 GitHub 網址**：Model Context Protocol (MCP) 
+開放標準規範 [28]。
+  * **(c) 需要的外部環境、API key 或帳號**：Node.js 或 Python 開發環境 
+[28]、目標內部服務（如 PostgreSQL、Datadog、Jira）之 API 存取憑證 [28, 29]。
+
+---
+
+### 附錄：導入檢查表與範本
+
+* **讀者實際動手操作**：
+  * **(a) 具體操作步驟與指令**：
+    * **操作步驟**：直接複製並套用附錄提供的標準化 Markdown 
+檢查表與多種專案類型的 `CLAUDE.md` 範本 [30-32]。
+    * **要建的檔案（可複製範本）**：
+      1. **前端 (React/Next.js) `CLAUDE.md`**：規範 UI 元件測試、MSW Mock API 與
+80% 共享元件覆蓋率 [31]。
+      2. **後端 (API Service) `CLAUDE.md`**：規範 Express/Fastify RESTful 
+路由結構、Prisma ORM Migration、Zod Schema 驗證與 AppError 統一捕捉 [31]。
+      3. **資料管道 (Data Pipeline) `CLAUDE.md`**：規範 Airflow DAGs 
+命名、Python/Pandas/Pydantic 慣例、冪等性執行與 Great Expectations 資料校驗 
+[32]。
+      4. **Monorepo (Root + Package) `CLAUDE.md`**：規範根目錄與子包覆寫規則 
+[32]。
+    * **檢查表**：附錄 A 完整的「四階段 AI 導入檢查表（Phase 1 Pre-Pilot 
+預備、Phase 2 Pilot 實施與每週追蹤、Phase 3 Go/No-Go 決策門檻、Month 3-5 General
+Rollout 全員擴大推廣）」[30, 33-35]。
+  * **(b) 書中提到的範例專案或 GitHub 網址**：無。
+  * **(c) 需要的外部環境、API key 或帳號**：Markdown 編輯器與 Git 版本控制系統 
+[30]。
+
+---
+
+💡 **下一步建議**：目前我們已經將整本書（前言至第 22 
+章與附錄）的所有動手操作指南整理完畢。若您需要，我們可以將這些實作步驟整合整理成
+一份完整的 **「CTO 落地實務操作手冊 (PDF Report)」**，或是將第 20 章與附錄中的 
+**CI/CD 工作流與 CLAUDE.md 範本** 生成獨立的範本檔案供團隊直接下載使用！
+
+Resumed conversation: 47e52d34-40fd-4e99-8ddd-8a09b58ef67f

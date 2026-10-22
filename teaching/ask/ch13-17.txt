@@ -1,0 +1,314 @@
+Different notebook specified, starting new conversation...
+Continuing conversation 47e52d34...
+Answer:
+### 第 13 章：既有程式碼庫
+
+* **讀者實際動手操作**：
+  * **(a) 具體操作步驟與指令**：
+    * **五階段轉型框架步驟** [1]：
+      1. *Audit（架構與技術債稽核）*：以開放式指令讓 Claude Code 
+進行全系統架構勘測、相依性圖譜分析、技術債盤點與測試覆蓋率掃描，產出結構化稽核報
+告 [2-4]。
+      2. *Onboard（載入與顯性化）*：執行 `claude /init` 自動生成初始 `CLAUDE.md`
+[4]，並手動補充 30% 
+隱性知識（如實際構建與測試指令、部署坑點、領域術語、禁止修改清單與常見錯誤）[5]
+。
+      3. 
+*Stabilize（穩定與建構防禦網）*：為關鍵路徑（如支付、認證）撰寫「表徵測試（Chara
+cterization Tests）」，鎖定現有行為（包含既有 Bug），並設定 CI 品質閘門 [6-8]。
+      4. *Modernize（漸進式重構）*：採用「絞殺者植物模式（Strangler Fig 
+Pattern）」[7]，配合 Git Worktree 
+平行開展開發與重構，將舊模組逐一替換為目標架構模式 [9, 10]。
+      5. *Maintain（持續運作與知識擷取）*：遵循 Explore-Plan-Execute-Verify 
+迴圈，每次發現新問題即同步更新 `CLAUDE.md` 捕捉機構知識 [10, 11]。
+    * **斜線指令與 Shell 指令**：
+      * `claude /init`（初始化專案 `CLAUDE.md`）[4]
+      * `git worktree add ../migration-users -b 
+migrate/users`（建立隔離工作樹進行平行重構）[9]
+    * **要建的檔案**：
+      * 根目錄 `CLAUDE.md` 及重構目標架構規範 [4, 7]
+      * 模組級 `CLAUDE.md`（如 
+`src/payments/CLAUDE.md`、`src/api/CLAUDE.md`、`src/legacy-billing/CLAUDE.md`）[
+5, 6, 10]
+      * 結構化稽核總結報告 `AUDIT_REPORT.md` [4, 12]
+    * **範例提示詞 (Prompts)**：
+      1. *系統架構勘測 Prompt*：
+         ```text
+         "Explore this codebase systematically. Map the architecture: what are 
+the main modules, how do they communicate, what are the entry points? Identify 
+the database layer, external API integrations, and any message queues or async 
+processing. Document any architectural concerns — circular dependencies, god 
+classes, missing abstractions, dead code."
+         ``` [2]
+      2. *技術債與測試分析 Prompt*：
+         ```text
+         "Catalog the tech debt in this codebase. Look for: deprecated API 
+usage, TODO/FIXME/HACK comments with dates, dead code paths that are never 
+reached, configuration files with commented-out sections, duplicated logic 
+across modules. Output a prioritized list with file locations and estimated 
+severity."
+         ``` [3]
+      3. *補充 CLAUDE.md 規範 Prompt*：
+         ```text
+         "Review the CLAUDE.md you generated. Add these conventions: we use 
+repository pattern for all database access, all API responses must follow the 
+JSend format, environment-specific config lives in /config/environments/ and 
+must never be hardcoded. Also add a 'Common Mistakes' section..."
+         ``` [5]
+      4. *模組漸進式重構 Prompt (Strangler Fig)*：
+         ```text
+         "Migrate the /src/api/users/ module from Express callbacks to 
+async/await handlers. Keep all existing tests passing. Add TypeScript types for 
+all request/response objects. Follow the patterns established in 
+/src/api/orders/ which has already been migrated."
+         ``` [9]
+      5. *重構前後比較總結 Prompt*：
+         ```text
+         "Compile a summary of the audit we just completed. Include: (1) 
+architecture findings with severity ratings, (2) tech debt inventory with 
+estimated effort, (3) security findings and resolution status, (4) test coverage
+before and after Phase 3, (5) time spent per phase, (6) how we parallelized the 
+migration work. Format it as a presentation-ready document with before/after 
+comparisons."
+         ``` [12]
+    * **檢查表 / 範本**：既有程式碼庫五階段導入檢查表（Phase 1 Audit 
+稽核門檻、Phase 2 Onboard CLAUDE.md 檢核、Phase 3 表徵測試覆蓋、Phase 4 
+絞殺者模式與 Worktree 重構、Phase 5 機構知識擷取）[8, 10]。
+  * **(b) 書中提到的範例專案或 GitHub 
+網址**：無（書中提及套用此框架的歷史案例包含 15 年 Java 單體架構、5 年 Django 
+專案與 React Native 行動應用）[1]。
+  * **(c) 需要的外部環境、API key 或帳號**：Claude Code CLI、Git 及 Git Worktree
+工具、既有專案程式碼庫存取權限 [4, 9]。
+
+---
+
+### 第 14 章：新專案
+
+* **讀者實際動手操作**：
+  * **(a) 具體操作步骤與指令**：
+    * **三大專案開發模式與腳手架優先步驟** [13, 14]：
+      1. *模式判定*：明確分類專案為 Mode A（原型驗證，快速捨棄）、Mode 
+B（生產級專案，架構優先）、或 Mode C（系統架構設計，AI 為思考夥伴）[13, 14]。
+      2. *Scaffold-First 五步驟 (針對 Mode B/C)* [15, 16]：
+         * **Step 1 撰寫架構文件**：在撰寫任何程式碼前，將 `CLAUDE.md` 
+當作架構設計文件（包含架構決策、約定規範與禁止事項 What NOT to do）[15, 17]。
+         * **Step 2 生成腳手架（Scaffold）**：指示 AI 
+僅建立目錄結構、介面、型態宣告與空測試骨架（驗收條件 Acceptance Criteria 
+作為測試名稱），嚴禁生成業務實作碼 [15, 16]。
+         * **Step 3 撰寫紅燈測試（Red Tests）**：依據 PRD 
+驗收條件補全測試內容，維持紅燈狀態 [16, 18]。
+         * **Step 4 驅動實作至綠燈**：讓 Claude Code 
+在防護網（Guardrails）內補全實作直至測試通過 [15, 16]。
+         * **Step 5 設定 CI 與監控**：從第一天起部署 CI 品質門檻與監控 [15, 
+18]。
+    * **要建的檔案**：
+      * 架構設計文件 `CLAUDE.md`（包含架構決策、預設框架與反模式 What NOT to 
+do）[15, 17]
+      * 技術需求文件 `PRD`（儲存於 `.claude/prds/`，如 
+`.claude/prds/refunds.md`）[16]
+      * `Contract Cards`（介面合約卡，獨立記錄跨層 API 介面）與 `Test 
+Cards`（驗收測試卡）[16, 19]
+    * **範例提示詞 (Prompts)**：
+      1. *專案骨架與 CI 預建 Prompt (Scaffold)*：
+         ```text
+         "Set up the project structure for notification-service based on the 
+CLAUDE.md. Create the directory layout, initialize TypeScript config, set up 
+Fastify with the health check endpoint, configure Jest for testing, and add a 
+GitHub Actions CI pipeline that runs tests and type checking on every push. 
+Don't implement any business logic yet — just the skeleton."
+         ``` [15, 18]
+      2. *PRD 骨架與空測試生成 Prompt (Scaffold-first)*：
+         ```text
+         "Read the PRD at .claude/prds/refunds.md . Produce the scaffold only: 
+the file tree under src/services/refunds/, the TypeScript interfaces, the empty 
+unit test files with one it() block per acceptance criterion (test names copied 
+verbatim from the PRD), and TODO comments inside each implementation file. Do 
+not write any implementation code and do not write any test bodies yet. Stop 
+after the scaffold and wait for review."
+         ``` [16]
+      3. *單元功能與測試補全 Prompt*：
+         ```text
+         "Implement the EmailNotificationHandler. Follow the NotificationChannel
+interface defined in /src/interfaces/. Write the implementation and the 
+corresponding test file. The tests should cover: successful send, provider 
+failure with retry, invalid recipient, and rate limiting. Use the factory 
+functions in /test/factories/ for test data."
+         ``` [18]
+    * **檢查表 / 範本**：專案開發模式選擇矩陣（Mode A/B/C 
+對照表）、原型轉生產環境流水線檢查表（Prototype-to-production 
+Pipeline）、綠地專案檢查表（Greenfield Checklist）[14, 20]。
+  * **(b) 書中提到的範例專案或 GitHub 網址**：無 [13-21]。
+  * **(c) 需要的外部環境、API key 或帳號**：Claude Code CLI、Git / GitHub 
+帳號、CI/CD 執行環境（如 GitHub Actions）[15, 18]。
+
+---
+
+### 第 15 章：大規模脈絡管理
+
+* **讀者實際動手操作**：
+  * **(a) 具體操作步驟與指令**：
+    * **脈絡載入與 Session 管理步驟** [22-24]：
+      1. *一任務一 Session*：每個獨立任務皆啟動全新的 
+Session，嚴禁沿用舊會話以防止「脈絡腐化（Context Rot）」[22-24]。
+      2. *顯性前置載入（Pre-Setup）*：在 Session 
+開頭主動指定欲修改的檔案、依存型態與對應測試，避免 AI 盲目搜尋 [22, 24]。
+      3. *強制使用計畫模式*：任何涉及 3 個以上檔案變更的任務，強制使用 `/plan` 
+進行前置分析與審查 [22, 24, 25]。
+      4. *使用 Subagent 隔離無關脈絡*：將分析、重構或效能排查交由 Subagent 
+獨立處理，避免主 Session 脈絡污染 [24, 26]。
+    * **斜線指令與執行參數**：
+      * `/plan` 或 `--plan`（進入計畫模式進行變更分析）[22, 25]
+    * **要建的檔案**：
+      * 於 `CLAUDE.md` 中新增 `Session Guidelines`（會話規範）與 `Prompt 
+Templates`（標準提示詞範本）區塊 [23]
+      * 在團隊 PR Review Checklists 中加入「Context 品質檢查項」[23, 24]
+    * **範例提示詞 (Prompts)**：
+      1. *前置脈絡載入 Prompt (Pre-Setup)*：
+         ```text
+         "Before we start, read these files to understand the context: 
+/src/auth/middleware.ts, /src/auth/types.ts, /tests/auth/middleware.test.ts. 
+Then review the CLAUDE.md section on authentication conventions. I need to add 
+OAuth support to the auth middleware. The implementation must use our existing 
+AuthProvider interface and not break the current JWT flow."
+         ``` [22]
+      2. *計畫模式 Prompt (Plan Mode)*：
+         ```text
+         "I need to add a caching layer to the UserService. The cache should 
+invalidate on any write operation. Plan the implementation — which files need to
+change, what the cache key strategy should be, and how invalidation will work."
+         ``` [25]
+      3. *Subagent 隔離任務 Prompt*：
+         ```text
+         "Use a subagent to analyze all the database queries in 
+/src/repositories/ and identify any N+1 query patterns. The subagent should 
+report back with file, line number, and suggested fix for each instance."
+         ``` [26]
+    * **檢查表 / 範本**：團隊脈絡管理必備檢查表（Context Management Essentials 
+Checklist，包含每 30 分鐘評估重置會話、參照路徑而非直接貼上程式碼等）[23, 24]。
+  * **(b) 書中提到的範例專案或 GitHub 網址**：無 [22-27]。
+  * **(c) 需要的外部環境、API key 或帳號**：Claude Code CLI、團隊通訊平台（如 
+Slack / Teams，用於公布脈絡規範）[22, 24]。
+
+---
+
+### 第 16 章：平行化
+
+* **讀者實際動手操作**：
+  * **(a) 具體操作步驟與指令**：
+    * **五大平行化模式與操作步驟** [28-31]：
+      1. *Mode 1 同分支多 Session*：僅限於開啟一個唯讀的「提問 
+Session」搭配主要「開發 Session」，嚴禁雙方同時修改檔案 [30, 32]。
+      2. *Mode 2 Subagents*：單一 Session 內派駐 Subagent 執行測試撰寫或 Code 
+Review [31, 33]。
+      3. *Mode 3 Git Worktrees*：針對不同 Feature/Ticket 
+建立獨立目錄與分支平行開發 [31, 33-35]。
+      4. *Mode 4 Agent Teams*：多代理共享任務檔案（Task File）或透過 Coordinator
+進行大型計畫協同 [31, 36, 37]。
+      5. *Mode 5 Dynamic Workflows*：利用 `/effort ultracode` 
+或預建指令執行全碼庫自動化運作 [34, 38, 39]。
+    * **斜線指令、執行參數與 CLI 指令**：
+      * `git worktree add ../<directory> <branch>`（建立工作樹）[35]
+      * `git worktree list` / `git worktree remove`（檢視與清理工作樹）[35]
+      * `claude --task "<objective>" &`（背景非互動式啟動平行作業）[37]
+      * `/effort ultracode` 或在提示詞中使用關鍵字 
+`ultracode`（啟用極高推理層級與動態工作流）[34, 38]
+      * `/deep-research`（執行跨網頁/資料源交叉比對報告）[38]
+    * **要建的檔案**：
+      * 共享任務檔案 `tasks/sprint-42.md`（用於 Agent Teams 
+領取與標記任務狀態）[36]
+      * 團隊共享 Shell Aliases 腳本（設定於 `.zshrc` / dotfiles，加速 Worktree 
+切換）[35, 40]
+    * **範例提示詞 (Prompts)**：
+      1. *Worktree 功能開發 Prompt (Worktree 1)*：
+         ```text
+         "Implement the user invitation flow described in 
+docs/specs/invitations.md. Follow the patterns in src/features/auth/ for the 
+service layer and src/api/routes/ for the endpoints."
+         ``` [41]
+      2. *Worktree 測試撰寫 Prompt (Worktree 2 平行對照)*：
+         ```text
+         "Write comprehensive tests for the user invitation flow described in 
+docs/specs/invitations.md. Cover: successful invitation, duplicate email, 
+expired token, rate limiting, permission checks. Use the test patterns in 
+src/features/auth/__tests__/."
+         ``` [41, 42]
+      3. *Agent Teams 共享任務領取 Prompt*：
+         ```text
+         "Read tasks/sprint-42.md. Pick the next unclaimed task, mark it as 
+in-progress with your worktree name, and implement it. When done, mark it 
+complete and pick the next one."
+         ``` [36]
+    * **檢查表 / 範本**：平行化前置檢查表（Before Start 
+Parallelizing）、平行會話檢核表（Per-parallel session 
+checklist）、規模化訊號檢查表 [39, 40]。
+  * **(b) 書中提到的範例專案或 GitHub 網址**：無 [28-43]。
+  * **(c) 需要的外部環境、API key 或帳號**：Claude Code CLI、Git 2.5+（支援 Git 
+Worktrees）[34, 35]。
+
+---
+
+### 第 17 章：多儲存庫設定
+
+* **讀者實際動手操作**：
+  * **(a) 具體操作步驟與指令**：
+    * **多儲存庫工作區拓撲與 Onboarding 步驟** [44-47]：
+      1. *平坦同級佈局（Flat Sibling Pattern）*：在本地建立統一父目錄（如 
+`~/work/sesame/`），將所有獨立 Repo Clone 為同級子目錄（如 `backend/`, 
+`frontend/`, `shared-contracts/`）[44, 45]。
+      2. *建立控制儲存庫*：建立獨立 Repo `ecosystem-config` 並 Clone 為 
+`.claude/` 目錄（位於 `~/work/sesame/.claude/`），父目錄本身不作為 Git 儲存庫 
+[48, 49]。
+      3. *編寫生態系與模組 CLAUDE.md*：在 `~/work/sesame/.claude/CLAUDE.md` 
+寫入拓撲圖、相依性圖譜與跨 Repo 部署順序；於 `.claude/modules/` 
+建立業務領域規範檔 [44, 46]。
+      4. *子 Repo 初始化與參照*：於各子 Repo 執行 `claude 
+/init`，並在頂端加上參照說明 `> This repo is part of the Sesame ecosystem. See 
+../.claude/CLAUDE.md...` [46, 50]。
+      5. *跨越會話（Spanning Session）測試*：使用 `--add-dir` 
+參數啟動會話，測試跨 Repo 讀取與修改 [46, 50]。
+    * **斜線指令、執行參數與 CLI 指令**：
+      * `git clone git@github.com:yourorg/ecosystem-config.git .claude` [46, 49]
+      * `claude /init` [46]
+      * `claude --add-dir ../frontend --add-dir ../shared-contracts`（啟動跨 
+Repo 跨越會話）[46, 50]
+    * **要建的檔案**：
+      * 生態系控制檔 `~/work/sesame/.claude/CLAUDE.md` [44, 46]
+      * 業務領域模組檔 `.claude/modules/<domain>.md`（如 `recruiting.md`, 
+`billing.md`）[46]
+      * 獨立單一事實來源儲存庫 `shared-contracts`（放置 OpenAPI 
+規格與型態定義）[45, 51]
+      * 跨 Repo 變更交接文件 `Handoff Document` [51, 52]
+    * **範例提示詞 (Prompts)**：
+      1. *Spanning Session 跨 Repo 導覽測試 Prompt*：
+         ```text
+         "Read the ecosystem CLAUDE.md at ../.claude/CLAUDE.md. I need to add a 
+createdBy field to the /api/invoices response. Find the backend endpoint, the 
+shared contract type definition, and the frontend code that consumes this 
+endpoint. Show me all three locations before making any changes."
+         ``` [47]
+      2. *Coordinator 產生 Handoff Document Prompt*：
+         ```text
+         "Generate a cross-repo change specification for the new billingPeriod 
+field. Include: (1) the exact API response shape change with before/after JSON, 
+(2) the TypeScript type update needed in shared-contracts, (3) for each 
+consuming repo — frontend, mobile, tablet-pos, tablet-kitchen — list the 
+specific files and functions that parse this endpoint's response. Format as a 
+markdown document I can paste into separate repo sessions."
+         ``` [51]
+    * **檢查表 / 範本**：工作區佈局檢查表（Workspace Setup Checklist）、Git 
+與生態系配置檢查表、Onboarding 流程檢查表 [53, 54]。
+  * **(b) 書中提到的範例專案或 GitHub 
+網址**：`git@github.com:yourorg/ecosystem-config.git`（生態系配置儲存庫）、`shar
+ed-contracts`（跨團隊 API 介面合約儲存庫）[45, 46, 49]。
+  * **(c) 需要的外部環境、API key 或帳號**：Claude Code CLI、GitHub/GitLab 
+企業組織帳號（有權限建立多個同級 Repo 與 `ecosystem-config`）[45, 46, 49]。
+
+---
+
+💡 **下一步建議**：若您希望繼續整理最後一部分——**第 18-22 
+章（多儲存庫開發實戰、部署 Claude Code、自動化 CI/CD 與管道、代理式產品設計、MCP
+優先未來）** 的實際動手操作指南，或者想針對第 16 章的 **Git Worktree 
+自動化腳本** 與第 17 章的 **生態系 `CLAUDE.md` 範本** 
+產出可以直接使用的設定檔，隨時告訴我！
+
+Resumed conversation: 47e52d34-40fd-4e99-8ddd-8a09b58ef67f
