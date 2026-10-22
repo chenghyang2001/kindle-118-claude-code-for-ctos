@@ -1,0 +1,101 @@
+ app/src/models/order.js   |  5 ++++-
+ app/src/routes/order.js   |  1 +
+ app/src/services/order.js |  3 +++
+ app/test/order.test.js    | 18 ++++++++++++++++++
+ app/test/router.test.js   |  2 +-
+ 5 files changed, 27 insertions(+), 2 deletions(-)
+diff --git a/app/src/models/order.js b/app/src/models/order.js
+index 501443a..e8d0557 100644
+--- a/app/src/models/order.js
++++ b/app/src/models/order.js
+@@ -6,9 +6,10 @@
+  * @property {string} customerId
+  * @property {string} productId
+  * @property {number} quantity
++ * @property {'low'|'normal'|'high'} [priority]
+  */
+ 
+-const FIELDS = ["customerId","productId","quantity"];
++const FIELDS = ["customerId","productId","quantity","priority"];
+ 
+ /** @returns {string[]} 錯誤訊息，空陣列代表合法 */
+ function validateOrder(input) {
+@@ -20,6 +21,7 @@ function validateOrder(input) {
+   if (input.productId !== undefined && typeof input.productId !== 'string') errors.push('productId 必須是 string');
+   if (input.quantity === undefined) errors.push('quantity 為必填');
+   if (input.quantity !== undefined && typeof input.quantity !== 'number') errors.push('quantity 必須是 number');
++  if (input.priority !== undefined && !['low', 'normal', 'high'].includes(input.priority)) errors.push('priority 必須是 low/normal/high');
+   return errors;
+ }
+ 
+@@ -30,6 +32,7 @@ function buildOrder(id, input) {
+     customerId: input.customerId,
+     productId: input.productId,
+     quantity: input.quantity,
++    priority: input.priority ?? 'normal',
+   };
+ }
+ 
+diff --git a/app/src/routes/order.js b/app/src/routes/order.js
+index 90e24cb..bcc2faa 100644
+--- a/app/src/routes/order.js
++++ b/app/src/routes/order.js
+@@ -6,6 +6,7 @@ const { toResponse } = require('../lib/http');
+ function orderRoutes(service = createOrderService()) {
+   return {
+     'GET /orders': () => toResponse(() => ({ status: 200, body: service.list() })),
++    'GET /orders/priority/:priority': (req) => toResponse(() => ({ status: 200, body: service.listByPriority(req.params.priority) })),
+     'GET /orders/:id': (req) => toResponse(() => ({ status: 200, body: service.get(req.params.id) })),
+     'POST /orders': (req) => toResponse(() => ({ status: 201, body: service.create(req.body) })),
+     'PUT /orders/:id': (req) => toResponse(() => ({ status: 200, body: service.update(req.params.id, req.body) })),
+diff --git a/app/src/services/order.js b/app/src/services/order.js
+index 6e31285..d4dc19e 100644
+--- a/app/src/services/order.js
++++ b/app/src/services/order.js
+@@ -19,6 +19,9 @@ function createOrderService(store = createStore('order')) {
+     list() {
+       return store.all();
+     },
++    listByPriority(priority) {
++      return store.all().filter((item) => item.priority === priority);
++    },
+     update(id, patch) {
+       const current = this.get(id);
+       const merged = { ...current, ...patch };
+diff --git a/app/test/order.test.js b/app/test/order.test.js
+index 55208dd..ac5f455 100644
+--- a/app/test/order.test.js
++++ b/app/test/order.test.js
+@@ -32,3 +32,21 @@ test('order route：POST 201、錯誤輸入 400、找不到 404', () => {
+   assert.equal(routes['POST /orders']({ body: {} }).status, 400);
+   assert.equal(routes['GET /orders/:id']({ params: { id: 'nope' } }).status, 404);
+ });
++
++test('order model：priority 預設 normal、非法值被拒', () => {
++  const svc = createOrderService();
++  assert.equal(svc.create(VALID).priority, 'normal');
++  assert.ok(validateOrder({ ...VALID, priority: 'urgent' }).includes('priority 必須是 low/normal/high'));
++  assert.deepEqual(validateOrder({ ...VALID, priority: 'high' }), []);
++});
++
++test('order route：GET /orders/priority/:priority 只回傳相符訂單', () => {
++  const svc = createOrderService();
++  const routes = orderRoutes(svc);
++  const high = svc.create({ ...VALID, priority: 'high' });
++  svc.create({ ...VALID, priority: 'low' });
++  svc.create(VALID);
++  const res = routes['GET /orders/priority/:priority']({ params: { priority: 'high' } });
++  assert.equal(res.status, 200);
++  assert.deepEqual(res.body.map((o) => o.id), [high.id]);
++});
+diff --git a/app/test/router.test.js b/app/test/router.test.js
+index 5923d2f..3084071 100644
+--- a/app/test/router.test.js
++++ b/app/test/router.test.js
+@@ -4,5 +4,5 @@ const assert = require('node:assert/strict');
+ const { buildRouter } = require('../src/router');
+ 
+ test('router 包含所有領域的 5 條路由', () => {
+-  assert.equal(Object.keys(buildRouter()).length, 40);
++  assert.equal(Object.keys(buildRouter()).length, 41);
+ });

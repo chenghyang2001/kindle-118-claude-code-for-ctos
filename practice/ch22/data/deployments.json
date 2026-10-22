@@ -1,0 +1,160 @@
+{
+  "deployments": [
+    {
+      "id": "dep-001",
+      "service": "api-gateway",
+      "version": "v1.1.0",
+      "env": "production",
+      "status": "succeeded",
+      "deployed_at": "2026-10-15T01:30:00Z",
+      "deployed_by": "bob",
+      "confirmed": false,
+      "confirmed_by": null,
+      "confirmed_at": null
+    },
+    {
+      "id": "dep-002",
+      "service": "billing",
+      "version": "v1.1.0",
+      "env": "production",
+      "status": "succeeded",
+      "deployed_at": "2026-10-15T01:30:00Z",
+      "deployed_by": "carol",
+      "confirmed": false,
+      "confirmed_by": null,
+      "confirmed_at": null
+    },
+    {
+      "id": "dep-004",
+      "service": "api-gateway",
+      "version": "v1.2.0",
+      "env": "production",
+      "status": "succeeded",
+      "deployed_at": "2026-10-16T02:30:00Z",
+      "deployed_by": "bob",
+      "confirmed": false,
+      "confirmed_by": null,
+      "confirmed_at": null
+    },
+    {
+      "id": "dep-005",
+      "service": "billing",
+      "version": "v1.2.0",
+      "env": "production",
+      "status": "succeeded",
+      "deployed_at": "2026-10-16T02:30:00Z",
+      "deployed_by": "carol",
+      "confirmed": true,
+      "confirmed_by": "cto-drill",
+      "confirmed_at": "2026-10-22T06:26:01+00:00"
+    },
+    {
+      "id": "dep-007",
+      "service": "api-gateway",
+      "version": "v1.3.0",
+      "env": "production",
+      "status": "succeeded",
+      "deployed_at": "2026-10-17T03:30:00Z",
+      "deployed_by": "bob",
+      "confirmed": false,
+      "confirmed_by": null,
+      "confirmed_at": null
+    },
+    {
+      "id": "dep-008",
+      "service": "billing",
+      "version": "v1.3.0",
+      "env": "production",
+      "status": "succeeded",
+      "deployed_at": "2026-10-17T03:30:00Z",
+      "deployed_by": "carol",
+      "confirmed": false,
+      "confirmed_by": null,
+      "confirmed_at": null
+    },
+    {
+      "id": "dep-010",
+      "service": "api-gateway",
+      "version": "v1.4.0",
+      "env": "production",
+      "status": "succeeded",
+      "deployed_at": "2026-10-18T04:30:00Z",
+      "deployed_by": "bob",
+      "confirmed": false,
+      "confirmed_by": null,
+      "confirmed_at": null
+    },
+    {
+      "id": "dep-011",
+      "service": "billing",
+      "version": "v1.4.0",
+      "env": "production",
+      "status": "failed",
+      "deployed_at": "2026-10-18T04:30:00Z",
+      "deployed_by": "carol",
+      "confirmed": false,
+      "confirmed_by": null,
+      "confirmed_at": null
+    },
+    {
+      "id": "dep-013",
+      "service": "api-gateway",
+      "version": "v1.5.0",
+      "env": "production",
+      "status": "succeeded",
+      "deployed_at": "2026-10-19T05:30:00Z",
+      "deployed_by": "bob",
+      "confirmed": false,
+      "confirmed_by": null,
+      "confirmed_at": null
+    },
+    {
+      "id": "dep-014",
+      "service": "billing",
+      "version": "v1.5.0",
+      "env": "production",
+      "status": "succeeded",
+      "deployed_at": "2026-10-19T05:30:00Z",
+      "deployed_by": "carol",
+      "confirmed": false,
+      "confirmed_by": null,
+      "confirmed_at": null
+    },
+    {
+      "id": "dep-020",
+      "service": "web-frontend",
+      "version": "v2.0.0",
+      "env": "production",
+      "status": "succeeded",
+      "deployed_at": "2026-10-16T06:00:00Z",
+      "deployed_by": "dave",
+      "confirmed": false,
+      "confirmed_by": null,
+      "confirmed_at": null
+    },
+    {
+      "id": "dep-021",
+      "service": "web-frontend",
+      "version": "v2.1.0",
+      "env": "production",
+      "status": "succeeded",
+      "deployed_at": "2026-10-18T06:00:00Z",
+      "deployed_by": "dave",
+      "confirmed": false,
+      "confirmed_by": null,
+      "confirmed_at": null
+    },
+    {
+      "id": "dep-022",
+      "service": "web-frontend",
+      "version": "v2.2.0",
+      "env": "production",
+      "status": "rolled_back",
+      "deployed_at": "2026-10-20T06:00:00Z",
+      "deployed_by": "dave",
+      "confirmed": false,
+      "confirmed_by": null,
+      "confirmed_at": null
+    }
+  ]
+}

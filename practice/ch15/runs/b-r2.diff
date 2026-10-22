@@ -1,0 +1,150 @@
+ app/src/models/order.js   | 15 +++++++++++++--
+ app/src/routes/order.js   |  1 +
+ app/src/services/order.js |  6 +++++-
+ app/test/order.test.js    | 44 ++++++++++++++++++++++++++++++++++++++++++++
+ app/test/router.test.js   |  6 ++++--
+ 5 files changed, 67 insertions(+), 5 deletions(-)
+diff --git a/app/src/models/order.js b/app/src/models/order.js
+index 501443a..3c9b4e1 100644
+--- a/app/src/models/order.js
++++ b/app/src/models/order.js
+@@ -6,9 +6,18 @@
+  * @property {string} customerId
+  * @property {string} productId
+  * @property {number} quantity
++ * @property {'low'|'normal'|'high'} priority
+  */
+ 
+-const FIELDS = ["customerId","productId","quantity"];
++const FIELDS = ["customerId","productId","quantity","priority"];
++
++// 優先度可選值；未指定時預設 normal
++const PRIORITIES = ['low', 'normal', 'high'];
++const DEFAULT_PRIORITY = 'normal';
++
++function isValidPriority(value) {
++  return PRIORITIES.includes(value);
++}
+ 
+ /** @returns {string[]} 錯誤訊息，空陣列代表合法 */
+ function validateOrder(input) {
+@@ -20,6 +29,7 @@ function validateOrder(input) {
+   if (input.productId !== undefined && typeof input.productId !== 'string') errors.push('productId 必須是 string');
+   if (input.quantity === undefined) errors.push('quantity 為必填');
+   if (input.quantity !== undefined && typeof input.quantity !== 'number') errors.push('quantity 必須是 number');
++  if (input.priority !== undefined && !isValidPriority(input.priority)) errors.push(`priority 必須是 ${PRIORITIES.join(' / ')} 其中之一`);
+   return errors;
+ }
+ 
+@@ -30,7 +40,8 @@ function buildOrder(id, input) {
+     customerId: input.customerId,
+     productId: input.productId,
+     quantity: input.quantity,
++    priority: input.priority ?? DEFAULT_PRIORITY,
+   };
+ }
+ 
+-module.exports = { FIELDS, validateOrder, buildOrder };
++module.exports = { FIELDS, PRIORITIES, DEFAULT_PRIORITY, isValidPriority, validateOrder, buildOrder };
+diff --git a/app/src/routes/order.js b/app/src/routes/order.js
+index 90e24cb..bcc2faa 100644
+--- a/app/src/routes/order.js
++++ b/app/src/routes/order.js
+@@ -6,6 +6,7 @@ const { toResponse } = require('../lib/http');
+ function orderRoutes(service = createOrderService()) {
+   return {
+     'GET /orders': () => toResponse(() => ({ status: 200, body: service.list() })),
++    'GET /orders/priority/:priority': (req) => toResponse(() => ({ status: 200, body: service.listByPriority(req.params.priority) })),
+     'GET /orders/:id': (req) => toResponse(() => ({ status: 200, body: service.get(req.params.id) })),
+     'POST /orders': (req) => toResponse(() => ({ status: 201, body: service.create(req.body) })),
+     'PUT /orders/:id': (req) => toResponse(() => ({ status: 200, body: service.update(req.params.id, req.body) })),
+diff --git a/app/src/services/order.js b/app/src/services/order.js
+index 6e31285..0a45068 100644
+--- a/app/src/services/order.js
++++ b/app/src/services/order.js
+@@ -1,6 +1,6 @@
+ 'use strict';
+ // Order 服務層：記憶體儲存的 CRUD
+-const { validateOrder, buildOrder } = require('../models/order');
++const { PRIORITIES, isValidPriority, validateOrder, buildOrder } = require('../models/order');
+ const { createStore } = require('../lib/store');
+ const { ValidationError, NotFoundError } = require('../lib/errors');
+ 
+@@ -19,6 +19,10 @@ function createOrderService(store = createStore('order')) {
+     list() {
+       return store.all();
+     },
++    listByPriority(priority) {
++      if (!isValidPriority(priority)) throw new ValidationError([`priority 必須是 ${PRIORITIES.join(' / ')} 其中之一`]);
++      return store.all().filter((item) => item.priority === priority);
++    },
+     update(id, patch) {
+       const current = this.get(id);
+       const merged = { ...current, ...patch };
+diff --git a/app/test/order.test.js b/app/test/order.test.js
+index 55208dd..9307383 100644
+--- a/app/test/order.test.js
++++ b/app/test/order.test.js
+@@ -32,3 +32,47 @@ test('order route：POST 201、錯誤輸入 400、找不到 404', () => {
+   assert.equal(routes['POST /orders']({ body: {} }).status, 400);
+   assert.equal(routes['GET /orders/:id']({ params: { id: 'nope' } }).status, 404);
+ });
++
++test('order model：priority 預設 normal、只接受 low / normal / high', () => {
++  const svc = createOrderService();
++  assert.equal(svc.create(VALID).priority, 'normal');
++  for (const priority of ['low', 'normal', 'high']) {
++    assert.deepEqual(validateOrder({ ...VALID, priority }), []);
++  }
++  assert.ok(validateOrder({ ...VALID, priority: 'urgent' }).length > 0);
++  assert.ok(validateOrder({ ...VALID, priority: 1 }).length > 0);
++});
++
++test('order service：update 可改 priority，非法值拒絕且不改動', () => {
++  const svc = createOrderService();
++  const created = svc.create(VALID);
++  assert.equal(svc.update(created.id, { priority: 'high' }).priority, 'high');
++  assert.equal(svc.update(created.id, {}).priority, 'high');
++  assert.throws(() => svc.update(created.id, { priority: 'urgent' }), /priority/);
++  assert.equal(svc.get(created.id).priority, 'high');
++});
++
++test('order service：listByPriority 依優先度篩選', () => {
++  const svc = createOrderService();
++  const low = svc.create({ ...VALID, priority: 'low' });
++  const normal = svc.create(VALID);
++  const high = svc.create({ ...VALID, priority: 'high' });
++  assert.deepEqual(svc.listByPriority('low').map((o) => o.id), [low.id]);
++  assert.deepEqual(svc.listByPriority('normal').map((o) => o.id), [normal.id]);
++  assert.deepEqual(svc.listByPriority('high').map((o) => o.id), [high.id]);
++  svc.remove(high.id);
++  assert.deepEqual(svc.listByPriority('high'), []);
++  assert.throws(() => svc.listByPriority('urgent'), /priority/);
++});
++
++test('order route：GET /orders/priority/:priority 200、非法優先度 400', () => {
++  const routes = orderRoutes();
++  routes['POST /orders']({ body: { ...VALID, priority: 'high' } });
++  routes['POST /orders']({ body: VALID });
++  const res = routes['GET /orders/priority/:priority']({ params: { priority: 'high' } });
++  assert.equal(res.status, 200);
++  assert.equal(res.body.length, 1);
++  assert.equal(res.body[0].priority, 'high');
++  assert.equal(routes['GET /orders/priority/:priority']({ params: { priority: 'urgent' } }).status, 400);
++  assert.equal(routes['POST /orders']({ body: { ...VALID, priority: 'urgent' } }).status, 400);
++});
+diff --git a/app/test/router.test.js b/app/test/router.test.js
+index 5923d2f..fa37162 100644
+--- a/app/test/router.test.js
++++ b/app/test/router.test.js
+@@ -3,6 +3,8 @@ const test = require('node:test');
+ const assert = require('node:assert/strict');
+ const { buildRouter } = require('../src/router');
+ 
+-test('router 包含所有領域的 5 條路由', () => {
+-  assert.equal(Object.keys(buildRouter()).length, 40);
++test('router 包含所有領域的 5 條路由，外加訂單依優先度查詢', () => {
++  const router = buildRouter();
++  assert.equal(Object.keys(router).length, 41);
++  assert.ok('GET /orders/priority/:priority' in router);
+ });

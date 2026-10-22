@@ -1,0 +1,31 @@
+{
+  "_comment": "【範本，未部署】K118 第 9 章：IT 用 MDM / 組態管理系統派發的託管設定（managed settings）。優先權最高，使用者與專案設定無法覆蓋。實際檔案位置：Windows C:/Program Files/ClaudeCode/managed-settings.json；macOS /Library/Application Support/ClaudeCode/managed-settings.json；Linux /etc/claude-code/managed-settings.json。本演練不寫入以上任何位置。",
+  "permissions": {
+    "disableBypassPermissionsMode": "disable",
+    "deny": [
+      "Read(**/secrets/**)",
+      "Edit(**/secrets/**)",
+      "Read(**/credentials/**)",
+      "Edit(**/credentials/**)",
+      "Read(**/.env*)",
+      "Edit(**/.env*)",
+      "Bash(rm -rf *)",
+      "Bash(rm -fr *)",
+      "Bash(git push --force *)",
+      "Bash(git push -f *)",
+      "Bash(git reset --hard *)",
+      "Bash(git clean -fdx *)",
+      "Bash(curl * | sh)",
+      "Bash(curl * | bash)"
+    ],
+    "ask": ["Bash(git push *)", "WebFetch"]
+  },
+  "allowManagedPermissionRulesOnly": false,
+  "allowManagedHooksOnly": true,
+  "cleanupPeriodDays": 30,
+  "env": {
+    "CLAUDE_CODE_ENABLE_TELEMETRY": "1",
+    "OTEL_METRICS_EXPORTER": "otlp",
+    "OTEL_EXPORTER_OTLP_ENDPOINT": "https://otel.example.internal:4317"
+  }
+}

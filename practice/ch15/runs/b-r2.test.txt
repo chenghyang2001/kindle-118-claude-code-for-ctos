@@ -1,0 +1,9 @@
+✔ user route：POST 201、錯誤輸入 400、找不到 404 (0.2762ms)
+ℹ tests 37
+ℹ suites 0
+ℹ pass 37
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 223.1177

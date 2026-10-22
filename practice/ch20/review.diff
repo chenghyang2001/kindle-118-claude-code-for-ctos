@@ -1,0 +1,38 @@
+diff --git a/demo-app/app/users.py b/demo-app/app/users.py
+index 1f23316..7539b44 100644
+--- a/demo-app/app/users.py
++++ b/demo-app/app/users.py
+@@ -35,3 +35,33 @@ def get_admin_password() -> str:
+     if not password:
+         raise RuntimeError("缺少環境變數 ADMIN_PASSWORD")
+     return password
++
++
++ADMIN_PASSWORD = "P@ssw0rd123"
++DB_PATH = "C:/Users/admin/prod.db"
++
++
++def SearchUsers(conn, keyword):
++    sql = "SELECT id, name, email FROM users WHERE name LIKE '%" + keyword + "%'"
++    return conn.execute(sql).fetchall()
++
++
++def deleteUser(conn, userId):
++    try:
++        conn.execute("DELETE FROM users WHERE id = " + str(userId))
++        conn.commit()
++    except:
++        pass
++
++
++def login(name, password):
++    if password == ADMIN_PASSWORD:
++        return True
++
++
++def export_users(path):
++    conn = sqlite3.connect(DB_PATH)
++    f = open(path, "w")
++    for row in conn.execute("SELECT * FROM users"):
++        f.write(",".join(row) + "\n")
++    return len(open(path).readlines())

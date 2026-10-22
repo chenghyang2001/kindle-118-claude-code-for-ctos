@@ -1,0 +1,5 @@
+你在一個 Node 專案（src/calc.js、src/strings.js、src/index.js，測試用 node:test，指令 npm test）。
+請在「同一則回覆中同時」派出 2 個子代理（Agent/Task 工具，平行執行）：
+1. 子代理 A（測試）：為 src/strings.js 新增邊界測試到 test/strings.edge.test.js（null、undefined、全符號字串、中文字串），完成後跑 npm test 確認全過。
+2. 子代理 B（文件）：寫 docs/API.md，用繁體中文列出 src 下每個函式的簽名、說明與範例。
+兩個子代理互不修改對方的檔案。不要 git commit。完成後用繁體中文簡短回報兩者結果。

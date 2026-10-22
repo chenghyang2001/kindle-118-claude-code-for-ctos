@@ -1,0 +1,7 @@
+在 src/calc.js 新增並匯出 multiply(a, b) 與 power(base, exp)（exp 必須是非負整數，否則拋錯），
+在 test/calc.test.js 補上對應測試，跑 npm test 確認全過。
+另外在專案根目錄建立 CHANGELOG.md，內容為：
+# 變更紀錄
+
+- 新增 calc.multiply 與 calc.power
+只改上述檔案，不要 git commit。完成後用繁體中文一句話回報。

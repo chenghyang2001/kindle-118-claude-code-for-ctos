@@ -1,0 +1,25 @@
+{
+  "name": "legacy-shop-api",
+  "version": "0.3.0",
+  "private": true,
+  "description": "K118 第 13 章練習用的小型舊專案（Express）",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "jest",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "express": "^4.22.3"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.25",
+    "@types/node": "^22.20.5",
+    "jest": "^29.7.0",
+    "supertest": "^7.3.1",
+    "typescript": "^5.9.3"
+  },
+  "jest": {
+    "testEnvironment": "node"
+  }
+}

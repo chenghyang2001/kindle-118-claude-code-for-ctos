@@ -1,0 +1,7 @@
+在 src/strings.js 新增並匯出 truncate(text, maxLength)（超過長度時截斷並加上「…」，maxLength 小於 1 拋錯），
+在 test/strings.test.js 補上對應測試，跑 npm test 確認全過。
+另外在專案根目錄建立 CHANGELOG.md，內容為：
+# 變更紀錄
+
+- 新增 strings.truncate
+只改上述檔案，不要 git commit。完成後用繁體中文一句話回報。

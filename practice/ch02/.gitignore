@@ -1,0 +1,9 @@
+node_modules/
+coverage/
+*.stackdump
+core
+*.core
+*.dmp
+.env
+logs/*.jsonl
+logs/*.txt

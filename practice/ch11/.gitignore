@@ -1,0 +1,4 @@
+.claude/hook.log
+__pycache__/
+.venv/
+*.stackdump

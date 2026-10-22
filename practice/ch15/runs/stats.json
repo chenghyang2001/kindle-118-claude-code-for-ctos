@@ -1,0 +1,122 @@
+[
+  {
+    "tag": "a-r1",
+    "toolCalls": 7,
+    "toolCounts": {
+      "Bash": 7
+    },
+    "readFiles": [
+      "app/src/models/order.js",
+      "app/src/routes/order.js",
+      "app/src/services/order.js",
+      "app/test/order.test.js",
+      "app/test/router.test.js"
+    ],
+    "editCalls": 4,
+    "errors": 1,
+    "changedFiles": "5",
+    "turns": 8,
+    "durationSec": 54.2,
+    "wallSec": 59,
+    "inputTokens": 16,
+    "cacheRead": 247473,
+    "cacheCreate": 20922,
+    "outputTokens": 4705,
+    "costUsd": 0.31103460000000005,
+    "tests": "36 pass / 0 fail"
+  },
+  {
+    "tag": "b-r1",
+    "toolCalls": 4,
+    "toolCounts": {
+      "Bash": 4
+    },
+    "readFiles": [
+      "CLAUDE.md",
+      "app/README.md",
+      "app/package.json",
+      "app/src/lib/errors.js",
+      "app/src/lib/http.js",
+      "app/src/lib/store.js",
+      "app/src/models/order.js",
+      "app/src/router.js",
+      "app/src/routes/order.js",
+      "app/src/services/order.js",
+      "app/test/order.test.js",
+      "app/test/router.test.js",
+      "scripts/gen-app.js"
+    ],
+    "editCalls": 1,
+    "errors": 0,
+    "changedFiles": "4",
+    "turns": 5,
+    "durationSec": 50.9,
+    "wallSec": 56,
+    "inputTokens": 10,
+    "cacheRead": 143136,
+    "cacheCreate": 19243,
+    "outputTokens": 4140,
+    "costUsd": 0.2654112,
+    "tests": "37 pass / 0 fail"
+  },
+  {
+    "tag": "a-r2",
+    "toolCalls": 3,
+    "toolCounts": {
+      "Bash": 3
+    },
+    "readFiles": [
+      "app/src/models/order.js",
+      "app/src/routes/order.js",
+      "app/src/services/order.js",
+      "app/test/order.test.js",
+      "app/test/router.test.js"
+    ],
+    "editCalls": 2,
+    "errors": 0,
+    "changedFiles": "5",
+    "turns": 4,
+    "durationSec": 27.4,
+    "wallSec": 32,
+    "inputTokens": 8,
+    "cacheRead": 111407,
+    "cacheCreate": 15750,
+    "outputTokens": 2124,
+    "costUsd": 0.1907934,
+    "tests": "35 pass / 0 fail"
+  },
+  {
+    "tag": "b-r2",
+    "toolCalls": 4,
+    "toolCounts": {
+      "Bash": 4
+    },
+    "readFiles": [
+      "app/README.md",
+      "app/package.json",
+      "app/src/lib/errors.js",
+      "app/src/lib/http.js",
+      "app/src/lib/store.js",
+      "app/src/models/order.js",
+      "app/src/router.js",
+      "app/src/routes/order.js",
+      "app/src/services/order.js",
+      "app/test/order.test.js",
+      "app/test/router.test.js",
+      "package.json",
+      "prompts/b-vague.md"
+    ],
+    "editCalls": 1,
+    "errors": 0,
+    "changedFiles": "5",
+    "turns": 5,
+    "durationSec": 55.3,
+    "wallSec": 59,
+    "inputTokens": 10,
+    "cacheRead": 142141,
+    "cacheCreate": 17971,
+    "outputTokens": 3449,
+    "costUsd": 0.2412162,
+    "tests": "37 pass / 0 fail"
+  }
+]

@@ -1,0 +1,6 @@
+Mode 2 驗證摘要（由 logs/mode2-stream.jsonl 解析；jsonl 含本機路徑，已 gitignore 不入版控）
+- 頂層 Agent/Task 呼叫數：2
+  - Agent「新增 strings 邊界測試」
+  - Agent「撰寫 docs/API.md 文件」
+- 兩個呼叫位於同一則 assistant message（msg_011CgGkm1AZFma4ugaBj1LT1）→ 平行派出
+- result：success，total_cost_usd 0.608（本次實測），npm test 14/14 通過

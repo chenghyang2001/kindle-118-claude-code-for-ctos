@@ -1,0 +1,11 @@
+Permission allow rule (.claude\settings.local.json): Write(migrations/**) is not matched by file permission checks — only Edit(path) rules are. Use Edit(migrations/**) instead (Edit rules cover all file-editing tools).
+Permission allow rule (.claude\settings.local.json): Write(scripts/**) is not matched by file permission checks — only Edit(path) rules are. Use Edit(scripts/**) instead (Edit rules cover all file-editing tools).
+`scripts/bad.sql` 沒有建立成功，Write 在執行前就被擋下了。照你的指示，我只試了一次，也沒有改放其他路徑。
+
+擋下它的是 PreToolUse hook `.claude/hooks/guard_sql.py`，錯誤訊息原文如下：
+
+```
+PreToolUse:Write hook error: [python "$CLAUDE_PROJECT_DIR/.claude/hooks/guard_sql.py"]: 已阻擋：.sql 檔只能寫在 migrations/ 底下，收到的路徑是 C:\Users\USER\workspace\k118-ch11-practice\scripts\bad.sql。請改放到 migrations/（例：migrations/002_xxx.sql）。
+```
+
+這符合 Week 3 的預期：`.sql` 檔只能寫在 `migrations/` 底下，這條規則現在由 hook 實際攔截，不只是寫在 `CLAUDE.md` 裡的說明。

@@ -1,0 +1,3 @@
+{"ts": "2026-10-22T06:25:49+00:00", "tool": "list_deployments", "args": {"service": "billing", "limit": 3}, "outcome": "ok", "detail": "3 筆"}
+{"ts": "2026-10-22T06:26:01+00:00", "tool": "confirm_deployment", "args": {"deployment_id": "dep-005", "confirmed_by": "cto-drill"}, "outcome": "ok", "detail": "changed"}
+{"ts": "2026-10-22T06:26:03+00:00", "tool": "confirm_deployment", "args": {"deployment_id": "dep-005", "confirmed_by": "someone-else"}, "outcome": "ok", "detail": "already-confirmed（未變更）"}

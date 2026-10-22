@@ -1,0 +1,5 @@
+.claude/session-state.md
+*.stackdump
+core
+*.core
+*.dmp

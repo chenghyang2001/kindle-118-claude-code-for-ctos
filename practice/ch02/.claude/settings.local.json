@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Read",
+      "Edit(src/**)",
+      "Write(src/**)",
+      "Bash(npm test*)",
+      "Bash(npx jest*)",
+      "Bash(npx tsc*)",
+      "Bash(npm run typecheck*)"
+    ],
+    "deny": [
+      "Edit(tests/**)",
+      "Write(tests/**)",
+      "Edit(src/lib/errors.ts)",
+      "Bash(git push*)"
+    ]
+  }
+}

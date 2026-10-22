@@ -1,0 +1,9 @@
+{
+  "name": "k118-ch16-practice",
+  "version": "1.0.0",
+  "description": "K118 第 16 章平行化演練用小專案",
+  "type": "commonjs",
+  "scripts": {
+    "test": "node --test"
+  }
+}

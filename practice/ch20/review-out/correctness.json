@@ -1,0 +1,86 @@
+[
+  {
+    "severity": "high",
+    "tag": "error-handling",
+    "file": "demo-app/app/users.py",
+    "line": 53,
+    "title": "deleteUser 用裸 except 吞掉所有例外",
+    "detail": "刪除失敗（例如資料庫鎖定、SQL 錯誤）時沒有 rollback、沒有記錄，也沒有通知呼叫端。呼叫端會以為刪除成功。裸 except 還會吞掉 KeyboardInterrupt 和 SystemExit。",
+    "suggestion": "只捕捉 sqlite3.Error，先 conn.rollback()，再用 logging.exception 記錄並重新拋出，或回傳成功與否的布林值。",
+    "sources": [
+      "correctness"
+    ]
+  },
+  {
+    "severity": "high",
+    "tag": "logic",
+    "file": "demo-app/app/users.py",
+    "line": 57,
+    "title": "login 在密碼錯誤時隱式回傳 None",
+    "detail": "密碼正確時回傳 True，其他路徑回傳 None，回傳型別不一致。參數 name 完全沒有使用，所以任何帳號名稱只要密碼等於管理員密碼就能登入。",
+    "suggestion": "明確寫 `return False`，並同時驗證 name，例如 `return name == 'admin' and hmac.compare_digest(password, get_admin_password())`。",
+    "sources": [
+      "correctness"
+    ]
+  },
+  {
+    "severity": "high",
+    "tag": "logic",
+    "file": "demo-app/app/users.py",
+    "line": 66,
+    "title": "對 sqlite 資料列 join 會因非字串欄位而拋 TypeError",
+    "detail": "`SELECT *` 回傳的 row 內含整數 id，也可能含 None。`','.join(row)` 遇到非字串元素會拋 TypeError，匯出在第一筆資料就會失敗。欄位值含逗號或換行時，輸出的 CSV 也會損壞。",
+    "suggestion": "改用 csv 模組：`csv.writer(f).writerow(row)`。若要自己 join，則寫成 `','.join(map(str, row))`。",
+    "sources": [
+      "correctness"
+    ]
+  },
+  {
+    "severity": "high",
+    "tag": "resource-leak",
+    "file": "demo-app/app/users.py",
+    "line": 64,
+    "title": "export_users 未關閉檔案與資料庫連線，且回讀時寫入尚未 flush",
+    "detail": "寫入用的 f 從未 close，conn 也未關閉。第 67 行在 f 還沒 flush 或關閉時就用 open(path).readlines() 回讀，行數可能不正確。回讀用的 open 也沒有關閉。發生例外時資源同樣不會釋放。",
+    "suggestion": "用 `with contextlib.closing(sqlite3.connect(DB_PATH)) as conn, open(path, 'w', newline='', encoding='utf-8') as f:` 包住寫入。以計數器累計筆數後回傳，不要回讀檔案。",
+    "sources": [
+      "correctness"
+    ]
+  },
+  {
+    "severity": "medium",
+    "tag": "logic",
+    "file": "demo-app/app/users.py",
+    "line": 67,
+    "title": "以回讀檔案行數作為匯出筆數，當欄位含換行時結果不正確",
+    "detail": "內容含換行的欄位會讓 readlines() 的行數大於實際資料筆數。此外，沒有指定 encoding，在 cp950 環境下遇到非 Big5 字元會拋 UnicodeEncodeError。",
+    "suggestion": "在迴圈中用 `count += 1` 累計，結束後 `return count`。開檔時指定 `encoding='utf-8'`。",
+    "sources": [
+      "correctness"
+    ]
+  },
+  {
+    "severity": "medium",
+    "tag": "logic",
+    "file": "demo-app/app/users.py",
+    "line": 45,
+    "title": "LIKE 搜尋把 keyword 直接串接，遇到單引號或 None 會出錯",
+    "detail": "keyword 含單引號時 SQL 語法錯誤並拋例外。keyword 為 None 時字串相加會拋 TypeError。keyword 內的 % 和 _ 也會被當成萬用字元，造成搜尋結果不符預期。",
+    "suggestion": "使用參數化查詢：`conn.execute('SELECT id, name, email FROM users WHERE name LIKE ?', (f'%{keyword}%',)).fetchall()`。",
+    "sources": [
+      "correctness"
+    ]
+  },
+  {
+    "severity": "low",
+    "tag": "logic",
+    "file": "demo-app/app/users.py",
+    "line": 51,
+    "title": "deleteUser 無法得知是否真的刪除了資料",
+    "detail": "目標 id 不存在時 DELETE 影響 0 列，函式仍靜默結束，也沒有回傳值，呼叫端無法區分刪除成功與找不到。",
+    "suggestion": "使用參數化查詢 `conn.execute('DELETE FROM users WHERE id = ?', (userId,))`，並回傳 `cur.rowcount > 0`。",
+    "sources": [
+      "correctness"
+    ]
+  }
+]

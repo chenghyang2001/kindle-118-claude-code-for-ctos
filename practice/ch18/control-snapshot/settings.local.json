@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(./**)",
+      "Bash(npm test)",
+      "Bash(node --test)",
+      "Bash(git status)",
+      "Bash(git log:*)",
+      "Bash(git diff:*)",
+      "Edit(./.claude/handoffs/**)",
+      "Bash(git -C shared-contracts show:*)",
+      "Bash(git -C shared-contracts log:*)"
+    ],
+    "deny": [
+      "Bash(git push:*)",
+      "Read(./**/.env)"
+    ]
+  },
+  "env": {
+    "BILLING_DEPLOY_ORDER": "shared-contracts,backend,frontend"
+  }
+}

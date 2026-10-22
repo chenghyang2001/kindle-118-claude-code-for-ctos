@@ -1,0 +1,4 @@
+work/
+verify-raw.txt
+*.stackdump
+node_modules/

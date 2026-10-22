@@ -1,0 +1,35 @@
+{
+  "_comment": "範本（未啟用）：要啟用時，把 hooks 區塊合併進本專案 .claude/settings.local.json。只送 session 中繼資料（事件名、session_id、開發者 ID、時間），不送提示詞與程式碼。URL 為內部 API 範本，非真實端點。curl 加 --max-time 與 || true，遙測 API 掛掉時不影響開發。",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -c '{ts: (now | todate), developer: env.USER // env.USERNAME, session_id: .session_id, event: \"SessionStart\"}' | curl -s --max-time 2 -X POST -H 'Content-Type: application/json' --data-binary @- http://localhost:8787/telemetry || true"
+          }
+        ]
+      }
+    ],
+    "SubagentStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -c '{ts: (now | todate), developer: env.USER // env.USERNAME, session_id: .session_id, event: \"SubagentStart\", agent_type: .agent_type}' | curl -s --max-time 2 -X POST -H 'Content-Type: application/json' --data-binary @- http://localhost:8787/telemetry || true"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -c '{ts: (now | todate), developer: env.USER // env.USERNAME, session_id: .session_id, event: \"Stop\"}' | curl -s --max-time 2 -X POST -H 'Content-Type: application/json' --data-binary @- http://localhost:8787/telemetry || true"
+          }
+        ]
+      }
+    ]
+  }
+}

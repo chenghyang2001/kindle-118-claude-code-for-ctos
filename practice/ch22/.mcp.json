@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "deploy-mcp": {
+      "type": "stdio",
+      "command": ".venv/Scripts/python.exe",
+      "args": [
+        "deploy_mcp.py"
+      ],
+      "env": {}
+    }
+  }
+}

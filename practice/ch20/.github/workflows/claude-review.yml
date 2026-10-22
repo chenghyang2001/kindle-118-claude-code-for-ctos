@@ -1,0 +1,141 @@
+# Claude PR 三面向平行審查（範本，未接真實 repo）
+#
+# 流程：prepare（產 diff）→ review ×3 平行（正確性 / 資安 / 規範）→ summarize（彙整去重 → PR 留言）
+# 與本機 run_local_review.sh 共用 .github/claude-review/ 的 prompt 與 aggregate.py。
+#
+# 啟用前必做：
+#   1. Repo Settings → Secrets → Actions 新增 ANTHROPIC_API_KEY（此檔只引用，不填真值）
+#   2. 來自 fork 的 PR 拿不到 secrets，review job 會被跳過（下方 if 條件）
+#   3. 想改用官方 action，見 review job 末尾註解的 anthropics/claude-code-action 寫法
+name: claude-review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+# 同一個 PR 有新 push 時取消舊的審查，省 API 費用
+concurrency:
+  group: claude-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  CLAUDE_CODE_VERSION: "2.1.308"   # 釘版本，避免 CLI 改版讓 CI 默默壞掉
+  REVIEW_MODEL: sonnet
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    outputs:
+      has_diff: ${{ steps.diff.outputs.has_diff }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: 產生 PR diff
+        id: diff
+        run: |
+          set -euo pipefail
+          git diff "origin/${{ github.base_ref }}...HEAD" -- . ':(exclude)*.lock' > review.diff
+          lines=$(wc -l < review.diff)
+          echo "diff 行數：$lines"
+          # 太大的 diff 截斷，避免單次審查 token 爆量（2000 行為假設值）
+          if [ "$lines" -gt 2000 ]; then head -n 2000 review.diff > r && mv r review.diff; fi
+          if [ -s review.diff ]; then echo "has_diff=true" >> "$GITHUB_OUTPUT"; else echo "has_diff=false" >> "$GITHUB_OUTPUT"; fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: review-diff
+          path: review.diff
+
+  review:
+    needs: prepare
+    if: needs.prepare.outputs.has_diff == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false          # 一個面向失敗不拖垮其他兩個
+      matrix:
+        dimension: [correctness, security, conventions]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: review-diff
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: 安裝 Claude Code CLI
+        run: npm install -g "@anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}"
+      - name: Headless 審查（${{ matrix.dimension }}）
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          set -euo pipefail
+          P=.github/claude-review/prompts
+          # prompt 用 stdin 傳入；只開唯讀工具，審查 job 不能改 repo
+          { cat "$P/${{ matrix.dimension }}.md" "$P/_output-format.md"
+            printf '\n## 待審查的 diff\n\n```diff\n'; cat review.diff; printf '\n```\n'
+          } | claude -p \
+              --setting-sources project \
+              --model "$REVIEW_MODEL" \
+              --max-turns 8 \
+              --output-format json \
+              --tools "Read,Grep,Glob" \
+              --allowedTools "Read,Grep,Glob" \
+              > "${{ matrix.dimension }}.raw.json"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: review-${{ matrix.dimension }}
+          path: ${{ matrix.dimension }}.raw.json
+
+      # ── 官方 action 替代寫法（擇一）──────────────────────────────
+      # - uses: anthropics/claude-code-action@v1
+      #   with:
+      #     anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+      #     prompt: |
+      #       依 .github/claude-review/prompts/${{ matrix.dimension }}.md 的指示審查本 PR 的 diff。
+      #     claude_args: --allowedTools "Read,Grep,Glob" --model sonnet --max-turns 8
+      # 官方 action 會自己處理 PR context 與留言；本範本自行 -p 是為了能把三份結果合併成一則留言。
+
+  summarize:
+    needs: review
+    if: always() && needs.review.result != 'skipped'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write      # 只有彙整 job 有寫 PR 的權限
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: review-*
+          path: review-out
+          merge-multiple: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: 彙整（排序 + 去重）
+        run: python .github/claude-review/aggregate.py review-out REVIEW-REPORT.md
+      - name: 發佈 / 更新 PR 留言
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          { echo '<!-- claude-review -->'; cat REVIEW-REPORT.md; } > body.md
+          # 有舊的 claude-review 留言就更新，沒有就新增（避免每次 push 洗版）
+          comment_id=$(gh api "repos/${{ github.repository }}/issues/${PR_NUMBER}/comments" \
+            --jq '[.[] | select(.body | startswith("<!-- claude-review -->"))][0].id // empty')
+          if [ -n "$comment_id" ]; then
+            gh api -X PATCH "repos/${{ github.repository }}/issues/comments/${comment_id}" -F body=@body.md
+          else
+            gh pr comment "$PR_NUMBER" --body-file body.md
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: review-report
+          path: REVIEW-REPORT.md

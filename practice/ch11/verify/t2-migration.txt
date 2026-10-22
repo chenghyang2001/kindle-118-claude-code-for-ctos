@@ -1,0 +1,16 @@
+`migrations/001_init.sql` 已經建好。寫入時 `guard_sql.py` 沒有擋下來，因為檔案就放在唯一允許放 `.sql` 的 `migrations/` 底下，檔名也符合 `NNN_描述.sql` 的規則。
+
+內容如下：
+
+```sql
+-- 建立 users 資料表（IF NOT EXISTS 讓 migration 可重跑）
+CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY,
+    email TEXT NOT NULL UNIQUE,
+    created_at TEXT
+);
+```
+
+- 用了 `CREATE TABLE IF NOT EXISTS`，所以重複執行不會報錯。
+- 這次走的是快速 demo 模式，沒有經過 QA 或審查，也還沒在資料庫裡實際執行過。
+- 如果想驗證 Week 3 的 hook 有沒有生效，可以試著把 `.sql` 寫到 `scripts/` 底下，應該會被擋下來；也可以看 `log_write.py` 有沒有記下這次寫入。

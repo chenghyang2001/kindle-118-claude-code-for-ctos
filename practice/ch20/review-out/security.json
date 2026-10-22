@@ -1,0 +1,98 @@
+[
+  {
+    "severity": "critical",
+    "tag": "hardcoded-secret",
+    "file": "demo-app/app/users.py",
+    "line": 40,
+    "title": "管理員密碼寫死在原始碼中",
+    "detail": "ADMIN_PASSWORD 以明文常數寫入程式碼並進入版本控制,任何能讀取 repo 的人都能取得管理員密碼。檔案上方已有 get_admin_password() 從環境變數讀取的安全作法,此處反而退步。",
+    "suggestion": "刪除此常數,改用既有的 get_admin_password() 從環境變數取得,例如 `if hmac.compare_digest(password, get_admin_password()):`。已外洩的密碼應立即更換。",
+    "sources": [
+      "security"
+    ]
+  },
+  {
+    "severity": "critical",
+    "tag": "sql-injection",
+    "file": "demo-app/app/users.py",
+    "line": 45,
+    "title": "SearchUsers 以字串串接 SQL,存在 SQL 注入",
+    "detail": "keyword 直接拼進 SQL 的 LIKE 條件,攻擊者可傳入 `' UNION SELECT ...` 等內容竊取或竄改資料。",
+    "suggestion": "使用參數化查詢:`conn.execute(\"SELECT id, name, email FROM users WHERE name LIKE ?\", (f\"%{keyword}%\",)).fetchall()`",
+    "sources": [
+      "security"
+    ]
+  },
+  {
+    "severity": "critical",
+    "tag": "sql-injection",
+    "file": "demo-app/app/users.py",
+    "line": 51,
+    "title": "deleteUser 以字串串接 SQL 且無任何授權檢查",
+    "detail": "userId 經 str() 後直接拼入 DELETE 語句,若傳入 `1 OR 1=1` 會刪除整張 users 表;且函式不檢查呼叫者身分,任何人皆可刪除使用者資料。",
+    "suggestion": "改用 `conn.execute(\"DELETE FROM users WHERE id = ?\", (int(userId),))`,並在函式入口加入呼叫者的管理員權限驗證。",
+    "sources": [
+      "security"
+    ]
+  },
+  {
+    "severity": "high",
+    "tag": "error-handling",
+    "file": "demo-app/app/users.py",
+    "line": 53,
+    "title": "裸 except 並直接 pass,吞掉所有錯誤",
+    "detail": "刪除失敗(含 DB 錯誤、KeyboardInterrupt)都被靜默忽略,呼叫端以為成功,也無法稽核或除錯;失敗時也未 rollback。",
+    "suggestion": "只捕捉 sqlite3.Error,rollback 後記錄日誌並重新拋出:`except sqlite3.Error:\n    conn.rollback()\n    logger.exception(\"刪除使用者失敗\")\n    raise`",
+    "sources": [
+      "security"
+    ]
+  },
+  {
+    "severity": "high",
+    "tag": "auth",
+    "file": "demo-app/app/users.py",
+    "line": 58,
+    "title": "login 僅比對共用管理員密碼、忽略使用者名稱且比對方式不安全",
+    "detail": "任何使用者名稱只要提供該密碼即通過;使用 == 做明文比對有時序攻擊風險;失敗時隱含回傳 None 而非 False,容易造成判斷錯誤。",
+    "suggestion": "改為依使用者名稱查詢雜湊密碼並以 bcrypt/argon2 驗證,或至少使用 `hmac.compare_digest`,並明確 `return False`。",
+    "sources": [
+      "security"
+    ]
+  },
+  {
+    "severity": "medium",
+    "tag": "other",
+    "file": "demo-app/app/users.py",
+    "line": 41,
+    "title": "資料庫路徑寫死為特定使用者的 Windows 路徑",
+    "detail": "DB_PATH 指向 C:/Users/admin/prod.db,洩漏正式環境位置與帳號資訊,且無法在其他環境運作。",
+    "suggestion": "改由環境變數或設定檔讀取:`DB_PATH = os.environ[\"DB_PATH\"]`。",
+    "sources": [
+      "security"
+    ]
+  },
+  {
+    "severity": "medium",
+    "tag": "resource-leak",
+    "file": "demo-app/app/users.py",
+    "line": 63,
+    "title": "export_users 未關閉連線與檔案,且匯出整張表含敏感資料",
+    "detail": "sqlite3 連線與兩個 open() 皆未關閉;`SELECT *` 會匯出所有欄位(可能含密碼雜湊等),path 由呼叫者控制可能寫入任意位置;`\",\".join(row)` 遇到非字串欄位(如 id)會拋 TypeError。另外此檔案看起來未 import sqlite3。",
+    "suggestion": "使用 `with closing(sqlite3.connect(DB_PATH)) as conn, open(path, \"w\", encoding=\"utf-8\", newline=\"\") as f:`,只選取必要欄位並用 csv.writer 寫出,驗證 path 在允許目錄內,並於檔案頂部 `import sqlite3`。",
+    "sources": [
+      "security"
+    ]
+  },
+  {
+    "severity": "low",
+    "tag": "naming",
+    "file": "demo-app/app/users.py",
+    "line": 44,
+    "title": "函式與參數命名不符 Python 慣例",
+    "detail": "SearchUsers、deleteUser、userId 使用駝峰/帕斯卡命名,與同檔 get_admin_password 的 snake_case 風格不一致。",
+    "suggestion": "改為 search_users、delete_user、user_id。",
+    "sources": [
+      "security"
+    ]
+  }
+]

@@ -1,0 +1,21 @@
+Permission allow rule (.claude\settings.local.json): Write(./.claude/handoffs/**) is not matched by file permission checks — only Edit(path) rules are. Use Edit(./.claude/handoffs/**) instead (Edit rules cover all file-editing tools).
+交接文件**沒有寫進去**。寫入 `.claude/handoffs/billing-period.md` 時，Claude Code 把 `.claude/` 目錄當成敏感路徑，要求權限，這個 session 沒有批准。這是權限擋下來的，我沒有改用 Bash 硬寫，也沒有寫到 `.claude/handoffs/` 以外的位置（你限制了寫入範圍）。我沒有改任何程式碼，也沒有 commit。
+
+**怎麼解除：** 在互動模式批准這次寫入，或在本專案的 `.claude/settings.local.json` 加一條允許寫入 `work/.claude/handoffs/**` 的規則。之後重跑這個提示詞，或叫我「重寫交接文件」就行，內容已經擬好，六個段落都有。
+
+另外，三個 repo 的 `npm test` 也需要權限，所以**這次沒有跑測試**，文件裡也照實寫了。
+
+## 分析出來的重點（文件主要內容）
+
+- **變更內容：** 契約從 1.0.0 升到 **1.1.0**（commit `7e54e6b`）。`Invoice` 多了一個選填欄位 `billingPeriod: {start, end}`，格式是 `YYYY-MM-DD`，兩端日期都算在期間內。另外新增 `isIsoDate()` 和 `validateBillingPeriod()` 兩個函式。
+- **驗證規則：**
+  - 沒帶這個欄位就不檢查，算合法。
+  - 有帶就必須是物件，`null` 會被擋下。
+  - 日期格式要對，而且要是真的存在的日期，`2026-02-30` 不合法。
+  - `start` 不可晚於 `end`。
+- **要改的檔案：** 兩邊都用相對路徑直接 `require` 同級的 `shared-contracts`，版本沒有鎖定，所以兩邊都不需要改 import。
+  - backend：`src/billing/invoice-service.js` 的示範資料要加上 `billingPeriod`，再加一筆沒有這個欄位的舊資料（建議叫 `inv-002`）。測試補在 `invoice-service.test.js`。`server.js` 不用改。
+  - frontend：`src/billing/invoice-view.js` 的 `formatInvoice()` 在有期間時才多印「期間 start ~ end」。測試補在 `invoice-view.test.js`。`cli.js` 不用改。
+- **相容性：** 這次**不是破壞性變更**。舊用戶端、舊資料、新用戶端接舊後端，三種情況都能正常運作。
+- **要注意的陷阱：** 後端如果把「沒有期間」寫成 `billingPeriod: null`，驗證會失敗，`GET` 直接回 500。舊 frontend 不會發現這個問題，因為它根本不檢查這個欄位。所以「沒有期間」只能用「不輸出這個欄位」來表示。
+- **部署順序：** 照規定是 shared-contracts → backend → frontend。每一步都列了驗收條件，包括「舊 frontend 接新 backend」和「新 frontend 接舊 backend」這兩種交叉測試。

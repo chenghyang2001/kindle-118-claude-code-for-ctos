@@ -1,0 +1,9 @@
+node_modules/
+.worktrees/
+*.stackdump
+core
+*.core
+*.dmp
+.env
+logs/*.jsonl
+logs/readonly-check.json

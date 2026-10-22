@@ -1,0 +1,2 @@
+# 固定 LF：避免 Windows checkout 成 CRLF 讓子 session 的精確字串替換失敗（第 1 輪踩到）
+* text=auto eol=lf
