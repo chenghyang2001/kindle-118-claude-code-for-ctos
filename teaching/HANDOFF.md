@@ -21,3 +21,4 @@
 | 11 | 2026-10-22 | 4 分 | 隔離模式（只載專案層設定），開窗先選允許外部 CLAUDE.md 匯入；四週 Harness 三項 claude -p 實測全過；已知漏洞：用 Bash 寫 .sql 不會被 hook 擋 |
 | 12 | 2026-10-22 | 6 分 | 用 claude -p 代替互動式 /init（56 行）再整理成三層（根 60 行＋src/api＋User 層只寫範本）；health 端點 10 條慣例全遵守；--allowedTools 會吃掉 prompt 參數改用 stdin |
 | 13 | 2026-10-22 | 12 分 | 五階段全跑；Modernize 用 git worktree 開 migrate/users 後 merge 並清掉；型別用 JSDoc＋@ts-check 不改 .ts；舊 bug 刻意保留由表徵測試鎖住（22 測試過） |
+| 14 | 2026-10-22 | 9 分 | Scaffold-First 做短網址服務：CLAUDE.md→13 個 it.todo 骨架→四組逐一轉綠各一 commit；書上 Contract／Test Cards 沒做 |
