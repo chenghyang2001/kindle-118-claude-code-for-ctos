@@ -23,3 +23,4 @@
 | 13 | 2026-10-22 | 12 分 | 五階段全跑；Modernize 用 git worktree 開 migrate/users 後 merge 並清掉；型別用 JSDoc＋@ts-check 不改 .ts；舊 bug 刻意保留由表徵測試鎖住（22 測試過） |
 | 14 | 2026-10-22 | 9 分 | Scaffold-First 做短網址服務：CLAUDE.md→13 個 it.todo 骨架→四組逐一轉綠各一 commit；書上 Contract／Test Cards 沒做 |
 | 15 | 2026-10-22 | 10 分 | 39 檔假專案上 A（前置載入）／B（只描述）各跑兩輪 claude -p：A 讀 5 檔、B 讀 13 檔，第二輪 A 省約兩成 token；compact／clear 門檻標假設值 |
+| 16 | 2026-10-22 | 5 分 | 三模式都用 claude -p 代替多個終端分頁：Mode 2 平行 2 子代理、Mode 3 兩 worktree 同時跑後 merge（解 CHANGELOG 衝突，24 測試過）、唯讀 session 驗證寫檔被擋 |
